@@ -1,0 +1,59 @@
+name: "Feature (AAC)"
+description: "Feature ticket with acceptance criteria and QA evidence requirements"
+title: "AAC-XX: <short title>"
+labels: ["type:feature"]
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: Goal
+      description: What outcome are we aiming for?
+      placeholder: "Deliver ... so that ..."
+    validations:
+      required: true
+
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: Define boundaries clearly.
+      value: |
+        In scope:
+        - 
+
+        Out of scope:
+        - 
+    validations:
+      required: true
+
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: Verifiable checkboxes. These become your Definition of Done for the ticket.
+      value: |
+        - [ ] 
+        - [ ] 
+        - [ ] 
+    validations:
+      required: true
+
+  - type: textarea
+    id: qa
+    attributes:
+      label: QA / Evidence required (must be included in PR)
+      description: This maps directly to AT4 Quality Assurance evidence.
+      value: |
+        CI / Automated:
+        - [ ] Unit tests updated/added
+        - [ ] CI green (api-ci)
+        - [ ] Artifacts reviewed (surefire reports)
+
+        Manual:
+        - [ ] Smoke test steps + outputs
+        - [ ] Boundary/negative cases attempted
+
+        Notes for AT3 demo:
+        - 
+    validations:
+      required: true
