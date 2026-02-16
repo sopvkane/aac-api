@@ -1,0 +1,32 @@
+name: "Spike / Research"
+description: "Time-boxed investigation with a clear output and decision"
+title: "AAC-XX: Spike - <topic>"
+labels: ["type:spike"]
+body:
+  - type: textarea
+    id: question
+    attributes:
+      label: Research question
+      placeholder: "e.g., How should we integrate Azure OpenAI cost controls?"
+    validations:
+      required: true
+
+  - type: textarea
+    id: timebox
+    attributes:
+      label: Timebox + approach
+      value: |
+        Timebox:
+        Approach:
+        Expected output (decision, doc, prototype):
+    validations:
+      required: true
+
+  - type: textarea
+    id: outcome
+    attributes:
+      label: Outcome (fill in before closing)
+      value: |
+        Decision:
+        Evidence/links:
+        Follow-up ticket(s):
