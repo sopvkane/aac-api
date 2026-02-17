@@ -1,12 +1,16 @@
 package com.sophie.aac.phrases.service;
 
 import com.sophie.aac.phrases.domain.PhraseEntity;
+import com.sophie.aac.phrases.domain.PhraseNotFoundException;
 import com.sophie.aac.phrases.repo.PhraseRepository;
+import com.sophie.aac.phrases.repo.PhraseSpecs;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -19,13 +23,25 @@ public class PhraseService {
   }
 
   @Transactional(readOnly = true)
-  public List<PhraseEntity> list() {
-    return repo.findAll(Sort.by(Sort.Direction.DESC, "createdAt"));
+  public List<PhraseEntity> list(Optional<String> q, Optional<String> category) {
+    Specification<PhraseEntity> spec = (root, query, cb) -> cb.conjunction();
+
+    if (q.isPresent() && !q.get().isBlank()) {
+      spec = spec.and(PhraseSpecs.textContainsIgnoreCase(q.get()));
+    }
+    if (category.isPresent() && !category.get().isBlank()) {
+      spec = spec.and(PhraseSpecs.categoryEqualsIgnoreCase(category.get()));
+    }
+
+    return repo.findAll(spec, Sort.by(Sort.Direction.ASC, "text"));
   }
 
   @Transactional
-  public PhraseEntity create(String text) {
-    var entity = new PhraseEntity(null, text.trim(), null);
+  public PhraseEntity create(String text, String category) {
+    var entity = new PhraseEntity();
+    entity.setId(UUID.randomUUID());
+    entity.setText(text);
+    entity.setCategory(category);
     return repo.save(entity);
   }
 
@@ -35,11 +51,5 @@ public class PhraseService {
       throw new PhraseNotFoundException(id);
     }
     repo.deleteById(id);
-  }
-
-  public static class PhraseNotFoundException extends RuntimeException {
-    public PhraseNotFoundException(UUID id) {
-      super("Phrase not found: " + id);
-    }
   }
 }
