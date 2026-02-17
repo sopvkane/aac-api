@@ -14,10 +14,10 @@ public class PhraseEntity {
   @Id
   private UUID id;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 200)
   private String text;
 
-  @Column(nullable = false)
+  @Column(nullable = false, length = 50)
   private String category;
 
   public PhraseEntity() {}

@@ -46,6 +46,20 @@ public class PhraseService {
   }
 
   @Transactional
+  public PhraseEntity update(UUID id, String text, String category) {
+    var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
+    entity.setText(text);
+    entity.setCategory(category);
+    return repo.save(entity);
+  }
+
+  @Transactional(readOnly = true)
+  public PhraseEntity get(UUID id) {
+    return repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
+  }
+
+
+  @Transactional
   public void delete(UUID id) {
     if (!repo.existsById(id)) {
       throw new PhraseNotFoundException(id);

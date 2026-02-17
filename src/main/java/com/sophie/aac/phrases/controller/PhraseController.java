@@ -3,6 +3,7 @@ package com.sophie.aac.phrases.controller;
 import com.sophie.aac.phrases.service.PhraseService;
 import com.sophie.aac.phrases.web.CreatePhraseRequest;
 import com.sophie.aac.phrases.web.PhraseResponse;
+import com.sophie.aac.phrases.web.UpdatePhraseRequest;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -40,6 +41,20 @@ public class PhraseController {
     return ResponseEntity
         .created(URI.create("/api/phrases/" + saved.getId()))
         .body(PhraseResponse.from(saved));
+  }
+
+  @PutMapping("/{id}")
+  public ResponseEntity<PhraseResponse> update(
+      @PathVariable UUID id,
+      @Valid @RequestBody UpdatePhraseRequest req
+  ) {
+    var saved = service.update(id, req.text(), req.category());
+    return ResponseEntity.ok(PhraseResponse.from(saved));
+  }
+
+  @GetMapping("/{id}")
+  public PhraseResponse get(@PathVariable UUID id) {
+    return PhraseResponse.from(service.get(id));
   }
 
   @DeleteMapping("/{id}")
