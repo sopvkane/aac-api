@@ -1,7 +1,10 @@
 package com.sophie.aac.phrases.domain;
 
-import jakarta.persistence.*;
-import java.time.Instant;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 import java.util.UUID;
 
 @Entity
@@ -9,44 +12,37 @@ import java.util.UUID;
 public class PhraseEntity {
 
   @Id
-  @Column(nullable = false, updatable = false)
   private UUID id;
 
-  @Column(name = "text", nullable = false, length = 280)
+  @Column(nullable = false)
   private String text;
 
-  @Column(name = "created_at", nullable = false, updatable = false)
-  private Instant createdAt;
+  @Column(nullable = false)
+  private String category;
 
-  protected PhraseEntity() {
-    // JPA
-  }
-
-  public PhraseEntity(UUID id, String text, Instant createdAt) {
-    this.id = id;
-    this.text = text;
-    this.createdAt = createdAt;
-  }
-
-  @PrePersist
-  void onCreate() {
-    if (id == null) id = UUID.randomUUID();
-    if (createdAt == null) createdAt = Instant.now();
-  }
+  public PhraseEntity() {}
 
   public UUID getId() {
     return id;
+  }
+
+  public void setId(UUID id) {
+    this.id = id;
   }
 
   public String getText() {
     return text;
   }
 
-  public Instant getCreatedAt() {
-    return createdAt;
-  }
-
   public void setText(String text) {
     this.text = text;
+  }
+
+  public String getCategory() {
+    return category;
+  }
+
+  public void setCategory(String category) {
+    this.category = category;
   }
 }
