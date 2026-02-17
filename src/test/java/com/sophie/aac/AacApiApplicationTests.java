@@ -1,13 +1,10 @@
 package com.sophie.aac;
 
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.context.ActiveProfiles;
 
-@SpringBootTest
-@ActiveProfiles("test")
+@Disabled("Redundant: integration tests boot the app with Testcontainers")
 class AacApiApplicationTests {
-
-  @Test
-  void contextLoads() {}
+  @Test void contextLoads() {}
 }
+

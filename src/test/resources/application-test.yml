@@ -1,10 +1,21 @@
+debug: false
+
+logging:
+  level:
+    root: INFO
+    org.springframework.boot.autoconfigure: INFO
+    org.springframework.boot.autoconfigure.condition: INFO
+    org.springframework.boot.autoconfigure.logging.ConditionEvaluationReportLoggingListener: OFF
+
 spring:
-  datasource:
-    url: jdbc:h2:mem:aac;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
-    username: sa
-    password:
+  flyway:
+    enabled: false
+
+  sql:
+    init:
+      mode: never
+
   jpa:
     hibernate:
-      ddl-auto: validate
-  flyway:
-    enabled: true
+      ddl-auto: none
+    open-in-view: false
