@@ -1,0 +1,54 @@
+== Health ==
+{"groups":["liveness","readiness"],"status":"UP"}
+== GET /api/phrases (empty) ==
+[]
+== POST /api/phrases (valid) ==
+HTTP/1.1 201 
+
+Content-Type: application/json
+
+Transfer-Encoding: chunked
+
+Date: Tue, 17 Feb 2026 12:23:16 GMT
+
+
+
+{"id":"ee7e0b14-2454-4345-a3db-eb6f091175a5","text":"I need help","createdAt":"2026-02-17T12:23:16.904878Z"}
+
+Created id=ee7e0b14-2454-4345-a3db-eb6f091175a5
+== GET /api/phrases (now 1) ==
+[{"id":"ee7e0b14-2454-4345-a3db-eb6f091175a5","text":"I need help","createdAt":"2026-02-17T12:23:16.904878Z"}]
+== POST /api/phrases (blank -> 400) ==
+HTTP/1.1 400 
+
+Content-Type: application/json
+
+Transfer-Encoding: chunked
+
+Date: Tue, 17 Feb 2026 12:23:17 GMT
+
+Connection: close
+
+
+
+{"timestamp":"2026-02-17T12:23:17.050Z","status":400,"error":"Bad Request","path":"/api/phrases"}
+== DELETE /api/phrases/{id} (204) ==
+HTTP/1.1 204 
+
+Date: Tue, 17 Feb 2026 12:23:17 GMT
+
+
+
+== DELETE /api/phrases/{missing} (404) ==
+HTTP/1.1 404 
+
+Content-Type: application/problem+json
+
+Transfer-Encoding: chunked
+
+Date: Tue, 17 Feb 2026 12:23:17 GMT
+
+
+
+{"detail":"Phrase not found: 00000000-0000-0000-0000-000000000000","instance":"/api/phrases/00000000-0000-0000-0000-000000000000","status":404,"title":"Not Found"}
+== Done ==
