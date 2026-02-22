@@ -1,4 +1,4 @@
-package com.sophie.aac.phrases.repo;
+package com.sophie.aac.phrases.repository;
 
 import com.sophie.aac.phrases.domain.PhraseEntity;
 import org.springframework.data.jpa.domain.Specification;

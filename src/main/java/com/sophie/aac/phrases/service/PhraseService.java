@@ -2,8 +2,9 @@ package com.sophie.aac.phrases.service;
 
 import com.sophie.aac.phrases.domain.PhraseEntity;
 import com.sophie.aac.phrases.domain.PhraseNotFoundException;
-import com.sophie.aac.phrases.repo.PhraseRepository;
-import com.sophie.aac.phrases.repo.PhraseSpecs;
+import com.sophie.aac.phrases.repository.PhraseRepository;
+import com.sophie.aac.phrases.repository.PhraseSpecs;
+
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
