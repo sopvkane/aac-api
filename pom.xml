@@ -23,7 +23,7 @@
     <testcontainers.version>1.20.4</testcontainers.version>
   </properties>
 
-  <!-- Correct place for BOM imports -->
+  <!-- BOM imports -->
   <dependencyManagement>
     <dependencies>
       <dependency>
@@ -41,6 +41,19 @@
     <dependency>
       <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-webmvc</artifactId>
+    </dependency>
+
+    <!-- Security (required for HttpSecurity, SecurityFilterChain, PasswordEncoder, etc.) -->
+    <dependency>
+      <groupId>org.springframework.boot</groupId>
+      <artifactId>spring-boot-starter-security</artifactId>
+    </dependency>
+
+    <!-- Security test helpers (optional but recommended) -->
+    <dependency>
+      <groupId>org.springframework.security</groupId>
+      <artifactId>spring-security-test</artifactId>
+      <scope>test</scope>
     </dependency>
 
     <!-- Validation (Bean Validation / Jakarta Validation) -->
