@@ -22,7 +22,7 @@ jobs:
           cache: "maven"
 
       - name: Build & test (with coverage)
-        run: ./mvnw -B clean test
+        run: ./mvnw -B clean verify
 
       - name: SonarCloud Scan
         uses: SonarSource/sonarcloud-github-action@v3
