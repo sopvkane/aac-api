@@ -14,6 +14,7 @@ import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class AuthService {
@@ -35,6 +36,7 @@ public class AuthService {
     this.encoder = encoder;
   }
 
+  @Transactional
   public LoginResult login(Role role, String pin) {
     CaregiverAccountEntity acc = accounts.findByRole(role)
         .filter(CaregiverAccountEntity::isActive)
@@ -61,6 +63,7 @@ public class AuthService {
     return new LoginResult(role, token, ttlMinutes);
   }
 
+  @Transactional
   public void logout(String rawToken) {
     if (rawToken == null || rawToken.isBlank()) return;
     sessions.deleteByTokenHash(TokenHash.sha256Hex(rawToken));
