@@ -4,9 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sophie.aac.preferences.domain.PreferenceItemEntity;
 import com.sophie.aac.preferences.service.PreferenceItemService;
 import com.sophie.aac.preferences.web.PreferenceItemRequest;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
+import com.sophie.aac.auth.util.TestSecurityHelper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -31,6 +33,12 @@ class PreferenceItemControllerTest {
     objectMapper = new ObjectMapper();
     service = mock(PreferenceItemService.class);
     mvc = MockMvcBuilders.standaloneSetup(new PreferenceItemController(service)).build();
+    TestSecurityHelper.setParentWithProfile();
+  }
+
+  @AfterEach
+  void tearDown() {
+    TestSecurityHelper.clear();
   }
 
   @Test
@@ -96,5 +104,93 @@ class PreferenceItemControllerTest {
         .andExpect(status().isOk());
 
     verify(service).delete(id);
+  }
+
+  @Test
+  void whoToAsk_returns_correct_people_per_location() throws Exception {
+    PreferenceItemEntity mum = new PreferenceItemEntity();
+    mum.setId(UUID.randomUUID());
+    mum.setKind("FAMILY_MEMBER");
+    mum.setLabel("Mum");
+    mum.setScope("HOME");
+    mum.setPriority(10);
+    when(service.listWhoToAskByLocation("HOME")).thenReturn(List.of(mum));
+
+    PreferenceItemEntity mrsPatel = new PreferenceItemEntity();
+    mrsPatel.setId(UUID.randomUUID());
+    mrsPatel.setKind("TEACHER");
+    mrsPatel.setLabel("Mrs Patel");
+    mrsPatel.setScope("SCHOOL");
+    mrsPatel.setPriority(10);
+    when(service.listWhoToAskByLocation("SCHOOL")).thenReturn(List.of(mrsPatel));
+
+    PreferenceItemEntity dave = new PreferenceItemEntity();
+    dave.setId(UUID.randomUUID());
+    dave.setKind("BUS_STAFF");
+    dave.setLabel("Dave (driver)");
+    dave.setScope("SCHOOL");
+    dave.setPriority(10);
+    when(service.listWhoToAskByLocation("BUS")).thenReturn(List.of(dave));
+
+    mvc.perform(get("/api/carer/preferences/who-to-ask").param("location", "HOME"))
+        .andExpect(status().isOk())
+        .andExpect(header().string("X-Suggested-Icon-Size", "large"))
+        .andExpect(jsonPath("$[0].kind").value("FAMILY_MEMBER"))
+        .andExpect(jsonPath("$[0].label").value("Mum"));
+
+    mvc.perform(get("/api/carer/preferences/who-to-ask").param("location", "SCHOOL"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].kind").value("TEACHER"))
+        .andExpect(jsonPath("$[0].label").value("Mrs Patel"));
+
+    mvc.perform(get("/api/carer/preferences/who-to-ask").param("location", "BUS"))
+        .andExpect(status().isOk())
+        .andExpect(jsonPath("$[0].kind").value("BUS_STAFF"))
+        .andExpect(jsonPath("$[0].label").value("Dave (driver)"));
+
+    verify(service).listWhoToAskByLocation("HOME");
+    verify(service).listWhoToAskByLocation("SCHOOL");
+    verify(service).listWhoToAskByLocation("BUS");
+  }
+
+  @Test
+  void whoToAsk_defaults_to_HOME_when_no_location() throws Exception {
+    when(service.listWhoToAskByLocation("HOME")).thenReturn(List.of());
+
+    mvc.perform(get("/api/carer/preferences/who-to-ask"))
+        .andExpect(status().isOk());
+
+    verify(service).listWhoToAskByLocation("HOME");
+  }
+
+  @Test
+  void list_returns_403_for_carer_requesting_school_kind() throws Exception {
+    TestSecurityHelper.setRoleWithProfile("CARER");
+
+    mvc.perform(get("/api/carer/preferences").param("kind", "TEACHER"))
+        .andExpect(status().isForbidden());
+
+    verify(service, never()).listByKind(any());
+  }
+
+  @Test
+  void list_returns_200_for_carer_requesting_food() throws Exception {
+    TestSecurityHelper.setRoleWithProfile("CARER");
+    when(service.listByKind("FOOD")).thenReturn(List.of());
+
+    mvc.perform(get("/api/carer/preferences").param("kind", "FOOD"))
+        .andExpect(status().isOk());
+
+    verify(service).listByKind("FOOD");
+  }
+
+  @Test
+  void list_returns_403_when_unauthenticated() throws Exception {
+    TestSecurityHelper.clear();
+
+    mvc.perform(get("/api/carer/preferences").param("kind", "FOOD"))
+        .andExpect(status().isForbidden());
+
+    verify(service, never()).listByKind(any());
   }
 }

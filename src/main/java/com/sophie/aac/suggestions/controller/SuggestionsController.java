@@ -1,5 +1,6 @@
 package com.sophie.aac.suggestions.controller;
 
+import com.sophie.aac.profile.service.CaregiverProfileService;
 import com.sophie.aac.suggestions.service.SuggestionsService;
 import com.sophie.aac.suggestions.web.SuggestionsRequest;
 import com.sophie.aac.suggestions.web.SuggestionsResponse;
@@ -11,9 +12,11 @@ import org.springframework.web.bind.annotation.*;
 public class SuggestionsController {
 
     private final SuggestionsService suggestionsService;
+    private final CaregiverProfileService profileService;
 
-    public SuggestionsController(SuggestionsService suggestionsService) {
+    public SuggestionsController(SuggestionsService suggestionsService, CaregiverProfileService profileService) {
         this.suggestionsService = suggestionsService;
+        this.profileService = profileService;
     }
 
     @PostMapping
@@ -23,6 +26,9 @@ public class SuggestionsController {
         var locationCategory = request.locationCategory();
 
         int limit = 3;
+        try {
+            limit = Math.min(6, Math.max(1, profileService.get().getMaxOptions()));
+        } catch (Exception ignored) { /* use default 3 */ }
 
         var suggestions = suggestionsService.suggest(prefix, timeBucket, locationCategory, limit);
 

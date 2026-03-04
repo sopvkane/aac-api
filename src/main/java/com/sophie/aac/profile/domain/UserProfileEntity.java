@@ -45,6 +45,10 @@ public class UserProfileEntity {
   @Column(nullable = false)
   private int maxOptions;
 
+  /** "small" | "medium" | "large" – use large for users who may not be able to read. */
+  @Column(nullable = false, length = 16)
+  private String preferredIconSize = "large";
+
   @Column(length = 50) private String favFood;
   @Column(length = 50) private String favDrink;
   @Column(length = 50) private String favShow;
@@ -94,6 +98,8 @@ public class UserProfileEntity {
   public void setAllowOther(boolean allowOther) { this.allowOther = allowOther; }
   public int getMaxOptions() { return maxOptions; }
   public void setMaxOptions(int maxOptions) { this.maxOptions = maxOptions; }
+  public String getPreferredIconSize() { return preferredIconSize; }
+  public void setPreferredIconSize(String preferredIconSize) { this.preferredIconSize = preferredIconSize; }
   public String getFavFood() { return favFood; }
   public void setFavFood(String favFood) { this.favFood = favFood; }
   public String getFavDrink() { return favDrink; }

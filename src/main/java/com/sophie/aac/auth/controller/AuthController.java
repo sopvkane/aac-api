@@ -2,6 +2,12 @@ package com.sophie.aac.auth.controller;
 
 import com.sophie.aac.auth.domain.Role;
 import com.sophie.aac.auth.service.AuthService;
+import com.sophie.aac.auth.util.CurrentProfile;
+import com.sophie.aac.profile.repository.UserProfileRepository;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -11,36 +17,114 @@ import jakarta.validation.constraints.NotNull;
 import org.springframework.http.ResponseCookie;
 import org.springframework.web.bind.annotation.*;
 
+@Tag(name = "Auth", description = "Authentication and multi-tenant profile management")
 @RestController
 @RequestMapping("/api/auth")
 public class AuthController {
 
   private final AuthService auth;
+  private final UserProfileRepository profileRepo;
 
-  public AuthController(AuthService auth) {
+  public AuthController(AuthService auth, UserProfileRepository profileRepo) {
     this.auth = auth;
+    this.profileRepo = profileRepo;
   }
 
-  public record LoginRequest(@NotNull Role role, @NotBlank String pin) {}
-  public record MeResponse(Role role) {}
-  public record LoginResponse(Role role) {}
+  public record ProfileSummary(java.util.UUID id, String displayName) {}
+  public record LoginRequest(String email, String password, String pin) {}
+  public record RegisterRequest(@NotBlank String displayName, @NotBlank String email, @NotBlank String password,
+      @NotBlank String role, @NotBlank String joiningCode) {}
+  public record MeResponse(Role role, java.util.UUID activeProfileId, java.util.List<java.util.UUID> profileIds, java.util.List<ProfileSummary> profiles) {}
+  public record LoginResponse(Role role, java.util.UUID activeProfileId, java.util.List<java.util.UUID> profileIds, java.util.List<ProfileSummary> profiles) {}
+  public record SelectProfileRequest(@NotNull java.util.UUID profileId) {}
 
+  @Operation(summary = "Login", description = "Authenticate with email+password (full account) or PIN (delegated). Sets AAC_SESSION cookie.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Success"),
+      @ApiResponse(responseCode = "400", description = "Invalid credentials")
+  })
   @PostMapping("/login")
   public LoginResponse login(@RequestBody @Valid LoginRequest req, HttpServletResponse res) {
-    var result = auth.login(req.role(), req.pin());
+    AuthService.LoginResult result;
+    if (req.email() != null && !req.email().isBlank() && req.password() != null) {
+      result = auth.loginWithPassword(req.email().trim(), req.password());
+    } else if (req.pin() != null && !req.pin().isBlank()) {
+      result = auth.loginWithPin(req.pin());
+    } else {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.BAD_REQUEST, "Provide email+password or pin");
+    }
 
     ResponseCookie cookie = ResponseCookie.from(AuthService.COOKIE_NAME, result.token())
         .httpOnly(true)
         .sameSite("Lax")
         .path("/")
         .maxAge(result.ttlMinutes() * 60)
-        .secure(false) // set true if you serve over https
+        .secure(false)
         .build();
 
     res.addHeader("Set-Cookie", cookie.toString());
-    return new LoginResponse(result.role());
+    var profiles = toProfileSummaries(profileRepo.findAllById(result.profileIds()));
+    return new LoginResponse(result.role(), result.activeProfileId(), result.profileIds(), profiles);
   }
 
+  @Operation(summary = "Register", description = "Create account with joining code from clinician. Role: PARENT_CARER or CLINICIAN.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "Registered"),
+      @ApiResponse(responseCode = "400", description = "Invalid input or code")
+  })
+  @PostMapping("/register")
+  public LoginResponse register(@RequestBody @Valid RegisterRequest req, HttpServletResponse res) {
+    auth.register(req.displayName(), req.email(), req.password(), req.role(), req.joiningCode());
+    AuthService.LoginResult result = auth.loginWithPassword(req.email().trim(), req.password());
+
+    ResponseCookie cookie = ResponseCookie.from(AuthService.COOKIE_NAME, result.token())
+        .httpOnly(true)
+        .sameSite("Lax")
+        .path("/")
+        .maxAge(result.ttlMinutes() * 60)
+        .secure(false)
+        .build();
+
+    res.addHeader("Set-Cookie", cookie.toString());
+    var profiles = toProfileSummaries(profileRepo.findAllById(result.profileIds()));
+    return new LoginResponse(result.role(), result.activeProfileId(), result.profileIds(), profiles);
+  }
+
+  @Operation(summary = "Select profile", description = "Switch active communicator/profile. Requires AAC_SESSION cookie. User must have access to the profile (profileId in profileIds from login/me).")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Profile switched"),
+      @ApiResponse(responseCode = "401", description = "Not logged in or invalid session"),
+      @ApiResponse(responseCode = "403", description = "No access to requested profile")
+  })
+  @PostMapping("/select-profile")
+  public MeResponse selectProfile(@RequestBody @Valid SelectProfileRequest req, HttpServletRequest servletReq) {
+    String token = readCookie(servletReq, AuthService.COOKIE_NAME);
+    auth.selectProfile(token, req.profileId());
+
+    org.springframework.security.core.Authentication authn =
+        org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
+    if (authn == null || !authn.isAuthenticated()) {
+      throw new org.springframework.web.server.ResponseStatusException(
+          org.springframework.http.HttpStatus.UNAUTHORIZED, "Not logged in");
+    }
+    String roleStr = authn.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+    Role role = Role.valueOf(roleStr);
+
+    var newAuth = new org.springframework.security.authentication.UsernamePasswordAuthenticationToken(
+        authn.getPrincipal(),
+        authn.getCredentials(),
+        authn.getAuthorities()
+    );
+    newAuth.setDetails(java.util.Map.of("profileId", req.profileId()));
+    org.springframework.security.core.context.SecurityContextHolder.getContext().setAuthentication(newAuth);
+
+    java.util.List<java.util.UUID> profileIds = auth.getProfileIdsForSession(token);
+    var profiles = toProfileSummaries(profileRepo.findAllById(profileIds));
+    return new MeResponse(role, req.profileId(), profileIds, profiles);
+  }
+
+  @Operation(summary = "Logout", description = "Clears AAC_SESSION cookie.")
   @PostMapping("/logout")
   public void logout(HttpServletRequest req, HttpServletResponse res) {
     String token = readCookie(req, AuthService.COOKIE_NAME);
@@ -57,15 +141,30 @@ public class AuthController {
     res.addHeader("Set-Cookie", cleared.toString());
   }
 
+  @Operation(summary = "Get current user", description = "Returns role, activeProfileId, profileIds, and profiles. Requires AAC_SESSION cookie.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "200", description = "Success"),
+      @ApiResponse(responseCode = "401", description = "Not logged in")
+  })
   @GetMapping("/me")
-  public MeResponse me(org.springframework.security.core.Authentication authn) {
+  public MeResponse me(org.springframework.security.core.Authentication authn, HttpServletRequest req) {
     if (authn == null || !authn.isAuthenticated()) {
       throw new org.springframework.web.server.ResponseStatusException(
           org.springframework.http.HttpStatus.UNAUTHORIZED, "Not logged in");
     }
-    // role stored as ROLE_PARENT etc
-    String role = authn.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
-    return new MeResponse(Role.valueOf(role));
+    String roleStr = authn.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
+    Role role = Role.valueOf(roleStr);
+    java.util.UUID activeProfileId = CurrentProfile.get();
+    String token = readCookie(req, AuthService.COOKIE_NAME);
+    java.util.List<java.util.UUID> profileIds = auth.getProfileIdsForSession(token);
+    var profiles = toProfileSummaries(profileRepo.findAllById(profileIds));
+    return new MeResponse(role, activeProfileId, profileIds, profiles);
+  }
+
+  private static java.util.List<ProfileSummary> toProfileSummaries(java.util.List<com.sophie.aac.profile.domain.UserProfileEntity> entities) {
+    return entities.stream()
+        .map(p -> new ProfileSummary(p.getId(), p.getDisplayName()))
+        .toList();
   }
 
   private static String readCookie(HttpServletRequest req, String name) {

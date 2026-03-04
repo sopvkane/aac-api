@@ -1,5 +1,6 @@
 package com.sophie.aac.phrases.service;
 
+import com.sophie.aac.auth.util.CurrentProfile;
 import com.sophie.aac.phrases.domain.PhraseEntity;
 import com.sophie.aac.phrases.domain.PhraseNotFoundException;
 import com.sophie.aac.phrases.repository.PhraseRepository;
@@ -25,7 +26,8 @@ public class PhraseService {
 
   @Transactional(readOnly = true)
   public List<PhraseEntity> list(Optional<String> q, Optional<String> category) {
-    Specification<PhraseEntity> spec = (root, query, cb) -> cb.conjunction();
+    UUID profileId = CurrentProfile.require();
+    Specification<PhraseEntity> spec = PhraseSpecs.profileIdEquals(profileId);
 
     if (q.isPresent() && !q.get().isBlank()) {
       spec = spec.and(PhraseSpecs.textContainsIgnoreCase(q.get()));
@@ -38,31 +40,46 @@ public class PhraseService {
   }
 
   @Transactional
-  public PhraseEntity create(String text, String category) {
+  public PhraseEntity create(String text, String category, String iconUrl) {
+    UUID profileId = CurrentProfile.require();
     var entity = new PhraseEntity();
     entity.setId(UUID.randomUUID());
+    entity.setProfileId(profileId);
     entity.setText(text);
     entity.setCategory(category);
+    entity.setIconUrl(iconUrl != null && !iconUrl.isBlank() ? iconUrl.trim() : null);
     return repo.save(entity);
   }
 
   @Transactional
-  public PhraseEntity update(UUID id, String text, String category) {
+  public PhraseEntity update(UUID id, String text, String category, String iconUrl) {
+    UUID profileId = CurrentProfile.require();
     var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
+    if (!entity.getProfileId().equals(profileId)) {
+      throw new PhraseNotFoundException(id);
+    }
     entity.setText(text);
     entity.setCategory(category);
+    entity.setIconUrl(iconUrl != null && !iconUrl.isBlank() ? iconUrl.trim() : null);
     return repo.save(entity);
   }
 
   @Transactional(readOnly = true)
   public PhraseEntity get(UUID id) {
-    return repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
+    UUID profileId = CurrentProfile.require();
+    var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
+    if (!entity.getProfileId().equals(profileId)) {
+      throw new PhraseNotFoundException(id);
+    }
+    return entity;
   }
 
 
   @Transactional
   public void delete(UUID id) {
-    if (!repo.existsById(id)) {
+    UUID profileId = CurrentProfile.require();
+    var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
+    if (!entity.getProfileId().equals(profileId)) {
       throw new PhraseNotFoundException(id);
     }
     repo.deleteById(id);

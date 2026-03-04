@@ -9,6 +9,6 @@ import java.util.UUID;
 
 public interface InteractionEventRepository extends JpaRepository<InteractionEventEntity, UUID> {
 
-    List<InteractionEventEntity> findByCreatedAtAfter(Instant since);
+    List<InteractionEventEntity> findByProfileIdAndCreatedAtAfter(UUID profileId, Instant since);
 }
 

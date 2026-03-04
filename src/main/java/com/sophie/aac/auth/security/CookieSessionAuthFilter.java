@@ -38,6 +38,10 @@ public class CookieSessionAuthFilter extends OncePerRequestFilter {
               null,
               List.of(new SimpleGrantedAuthority("ROLE_" + role.name()))
           );
+          var details = new java.util.HashMap<String, Object>();
+          if (session.getProfileId() != null) details.put("profileId", session.getProfileId());
+          if (session.getUserAccountId() != null) details.put("userId", session.getUserAccountId());
+          if (!details.isEmpty()) auth.setDetails(details);
           SecurityContextHolder.getContext().setAuthentication(auth);
         }
       });

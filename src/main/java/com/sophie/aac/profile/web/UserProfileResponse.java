@@ -19,6 +19,7 @@ public record UserProfileResponse(
     boolean allowWork,
     boolean allowOther,
     int maxOptions,
+    String preferredIconSize,
     String favFood,
     String favDrink,
     String favShow,

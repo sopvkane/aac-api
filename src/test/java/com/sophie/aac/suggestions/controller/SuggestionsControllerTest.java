@@ -3,6 +3,8 @@ package com.sophie.aac.suggestions.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sophie.aac.phrases.domain.PhraseEntity;
 import com.sophie.aac.phrases.web.PhraseResponse;
+import com.sophie.aac.profile.domain.UserProfileEntity;
+import com.sophie.aac.profile.service.CaregiverProfileService;
 import com.sophie.aac.suggestions.domain.LocationCategory;
 import com.sophie.aac.suggestions.domain.TimeBucket;
 import com.sophie.aac.suggestions.service.SuggestionsService;
@@ -32,8 +34,12 @@ class SuggestionsControllerTest {
   void setUp() {
     objectMapper = new ObjectMapper();
     suggestionsService = mock(SuggestionsService.class);
+    CaregiverProfileService profileService = mock(CaregiverProfileService.class);
+    UserProfileEntity profile = new UserProfileEntity();
+    profile.setMaxOptions(3);
+    when(profileService.get()).thenReturn(profile);
     mvc = MockMvcBuilders
-        .standaloneSetup(new SuggestionsController(suggestionsService))
+        .standaloneSetup(new SuggestionsController(suggestionsService, profileService))
         .build();
   }
 

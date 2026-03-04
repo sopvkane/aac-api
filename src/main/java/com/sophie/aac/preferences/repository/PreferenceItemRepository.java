@@ -8,6 +8,9 @@ import java.util.UUID;
 
 public interface PreferenceItemRepository extends JpaRepository<PreferenceItemEntity, UUID> {
 
-    List<PreferenceItemEntity> findByKindOrderByPriorityDescLabelAsc(String kind);
+    List<PreferenceItemEntity> findByProfileIdAndKindOrderByPriorityDescLabelAsc(UUID profileId, String kind);
+
+    List<PreferenceItemEntity> findByProfileIdAndKindInAndScopeInOrderByPriorityDescLabelAsc(
+        UUID profileId, List<String> kinds, List<String> scopes);
 }
 

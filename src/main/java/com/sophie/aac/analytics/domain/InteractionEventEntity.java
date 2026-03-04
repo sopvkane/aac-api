@@ -26,6 +26,9 @@ public class InteractionEventEntity {
     @Column(name = "selected_text", length = 280)
     private String selectedText;
 
+    @Column(name = "profile_id", nullable = false)
+    private UUID profileId;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -67,6 +70,14 @@ public class InteractionEventEntity {
 
     public void setSelectedText(String selectedText) {
         this.selectedText = selectedText;
+    }
+
+    public UUID getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(UUID profileId) {
+        this.profileId = profileId;
     }
 
     public Instant getCreatedAt() {

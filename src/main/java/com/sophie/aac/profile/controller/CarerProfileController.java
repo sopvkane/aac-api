@@ -1,29 +1,58 @@
 package com.sophie.aac.profile.controller;
 
+import com.sophie.aac.auth.domain.Role;
+import com.sophie.aac.auth.util.CurrentRole;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.service.CaregiverProfileService;
+import com.sophie.aac.profile.service.ProfileSetupService;
+import com.sophie.aac.profile.web.CreateProfileRequest;
 import com.sophie.aac.profile.web.UpdateUserProfileRequest;
 import com.sophie.aac.profile.web.UserProfileResponse;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.responses.ApiResponse;
+import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 @RestController
-@RequestMapping("/api/carer/profile")
+@RequestMapping("/api/carer")
 public class CarerProfileController {
 
   private final CaregiverProfileService service;
+  private final ProfileSetupService profileSetupService;
 
-  public CarerProfileController(CaregiverProfileService service) {
+  public CarerProfileController(CaregiverProfileService service, ProfileSetupService profileSetupService) {
     this.service = service;
+    this.profileSetupService = profileSetupService;
   }
 
-  @GetMapping
+  @Operation(summary = "Create profile", description = "Create a new communicator profile linked to the current account. Used for the 'set up' / registration flow when adding a new communicator. Requires auth.")
+  @ApiResponses({
+      @ApiResponse(responseCode = "201", description = "Profile created"),
+      @ApiResponse(responseCode = "401", description = "Not signed in")
+  })
+  @PostMapping("/profiles")
+  public ResponseEntity<UserProfileResponse> createProfile(@RequestBody @Valid CreateProfileRequest req) {
+    UserProfileEntity created = profileSetupService.createProfile(req.displayName(), req.wakeName());
+    return ResponseEntity.status(HttpStatus.CREATED)
+        .header("Location", "/api/carer/profile")
+        .body(toResponse(created));
+  }
+
+  @GetMapping("/profile")
   public UserProfileResponse get() {
     return toResponse(service.get());
   }
 
-  @PutMapping
+  @PutMapping("/profile")
   public UserProfileResponse update(@RequestBody @Valid UpdateUserProfileRequest req) {
+    Role role = CurrentRole.get();
+    if (role != Role.PARENT && role != Role.CLINICIAN) {
+      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only parent or clinician can update profile");
+    }
     return toResponse(service.update(req));
   }
 
@@ -43,6 +72,7 @@ public class CarerProfileController {
         p.isAllowWork(),
         p.isAllowOther(),
         p.getMaxOptions(),
+        p.getPreferredIconSize(),
         p.getFavFood(),
         p.getFavDrink(),
         p.getFavShow(),

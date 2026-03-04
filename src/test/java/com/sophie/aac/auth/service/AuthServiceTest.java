@@ -1,10 +1,12 @@
 package com.sophie.aac.auth.service;
 
-import com.sophie.aac.auth.domain.AuthSessionEntity;
 import com.sophie.aac.auth.domain.CaregiverAccountEntity;
+import com.sophie.aac.auth.domain.CaregiverAccountProfileEntity;
 import com.sophie.aac.auth.domain.Role;
 import com.sophie.aac.auth.repository.AuthSessionRepository;
+import com.sophie.aac.auth.repository.CaregiverAccountProfileRepository;
 import com.sophie.aac.auth.repository.CaregiverAccountRepository;
+import com.sophie.aac.auth.util.CurrentProfile;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -37,13 +39,44 @@ class AuthServiceTest {
   AuthSessionRepository sessionRepo;
 
   @Autowired
+  CaregiverAccountProfileRepository accountProfileRepo;
+
+  @Autowired
+  com.sophie.aac.profile.repository.UserProfileRepository profileRepo;
+
+  @Autowired
   PasswordEncoder encoder;
 
   @BeforeEach
   void setUp() {
     sessionRepo.deleteAll();
+    accountProfileRepo.deleteAll();
     accountRepo.deleteAll();
+    ensureDefaultProfile();
     seedParentAccount();
+  }
+
+  private void ensureDefaultProfile() {
+    if (profileRepo.findById(CurrentProfile.DEFAULT_ID).isEmpty()) {
+      var p = new com.sophie.aac.profile.domain.UserProfileEntity();
+      p.setId(CurrentProfile.DEFAULT_ID);
+      p.setDisplayName("Test");
+      p.setWakeName("Hey");
+      p.setDetailsDefault(true);
+      p.setVoiceDefault(false);
+      p.setAiEnabled(true);
+      p.setMemoryEnabled(true);
+      p.setAnalyticsEnabled(false);
+      p.setDefaultLocation(com.sophie.aac.suggestions.domain.LocationCategory.HOME);
+      p.setAllowHome(true);
+      p.setAllowSchool(true);
+      p.setAllowWork(false);
+      p.setAllowOther(true);
+      p.setMaxOptions(3);
+      p.setPreferredIconSize("large");
+      p.setUpdatedAt(java.time.Instant.now());
+      profileRepo.save(p);
+    }
   }
 
   private void seedParentAccount() {
@@ -54,6 +87,11 @@ class AuthServiceTest {
     acc.setActive(true);
     acc.setCreatedAt(java.time.Instant.now());
     accountRepo.save(acc);
+
+    CaregiverAccountProfileEntity ap = new CaregiverAccountProfileEntity();
+    ap.setAccountId(acc.getId());
+    ap.setProfileId(CurrentProfile.DEFAULT_ID);
+    accountProfileRepo.save(ap);
   }
 
   @Test
@@ -62,6 +100,8 @@ class AuthServiceTest {
     assertThat(result.role()).isEqualTo(Role.PARENT);
     assertThat(result.token()).isNotBlank();
     assertThat(result.ttlMinutes()).isPositive();
+    assertThat(result.profileIds()).contains(CurrentProfile.DEFAULT_ID);
+    assertThat(result.activeProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
 
     assertThat(sessionRepo.count()).isEqualTo(1);
   }
@@ -101,5 +141,44 @@ class AuthServiceTest {
     authService.login(Role.PARENT, "1234");
     authService.logout("   ");
     assertThat(sessionRepo.count()).isEqualTo(1);
+  }
+
+  @Test
+  void selectProfile_success_updates_session() {
+    AuthService.LoginResult login = authService.login(Role.PARENT, "1234");
+    var sessionBefore = sessionRepo.findAll().get(0);
+    assertThat(sessionBefore.getProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
+
+    authService.selectProfile(login.token(), CurrentProfile.DEFAULT_ID);
+    var sessionAfter = sessionRepo.findAll().get(0);
+    assertThat(sessionAfter.getProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
+  }
+
+  @Test
+  void selectProfile_forbidden_when_no_access_to_profile() {
+    var otherProfileId = java.util.UUID.randomUUID();
+    var p = new com.sophie.aac.profile.domain.UserProfileEntity();
+    p.setId(otherProfileId);
+    p.setDisplayName("Other");
+    p.setWakeName("Hey");
+    p.setDetailsDefault(true);
+    p.setVoiceDefault(false);
+    p.setAiEnabled(true);
+    p.setMemoryEnabled(true);
+    p.setAnalyticsEnabled(false);
+    p.setDefaultLocation(com.sophie.aac.suggestions.domain.LocationCategory.HOME);
+    p.setAllowHome(true);
+    p.setAllowSchool(true);
+    p.setAllowWork(false);
+    p.setAllowOther(true);
+    p.setMaxOptions(3);
+    p.setPreferredIconSize("large");
+    p.setUpdatedAt(java.time.Instant.now());
+    profileRepo.save(p);
+
+    AuthService.LoginResult login = authService.login(Role.PARENT, "1234");
+    assertThatThrownBy(() -> authService.selectProfile(login.token(), otherProfileId))
+        .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+        .hasMessageContaining("No access to profile");
   }
 }

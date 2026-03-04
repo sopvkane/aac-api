@@ -1,5 +1,6 @@
 package com.sophie.aac.profile.service;
 
+import com.sophie.aac.auth.util.CurrentProfile;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import com.sophie.aac.profile.web.UpdateUserProfileRequest;
@@ -19,9 +20,17 @@ public class CaregiverProfileService {
     this.repo = repo;
   }
 
+  /**
+   * Returns the active profile. Requires authentication – throws when guest (unauthenticated).
+   * Use getOrDefault() for callers that support guest mode.
+   */
   public UserProfileEntity get() {
-    return repo.findById(DEFAULT_ID)
-        .orElseThrow(() -> new IllegalStateException("Default user_profile row missing."));
+    UUID profileId = CurrentProfile.get();
+    if (profileId == null) {
+      throw new IllegalStateException("No active profile. Sign in to access profile data.");
+    }
+    return repo.findById(profileId)
+        .orElseThrow(() -> new IllegalStateException("Profile not found: " + profileId));
   }
 
   @Transactional
@@ -43,6 +52,13 @@ public class CaregiverProfileService {
     p.setAllowWork(r.allowWork());
     p.setAllowOther(r.allowOther());
     p.setMaxOptions(r.maxOptions());
+
+    if (r.preferredIconSize() != null && !r.preferredIconSize().isBlank()) {
+      String size = r.preferredIconSize().trim().toLowerCase();
+      if (size.equals("small") || size.equals("medium") || size.equals("large")) {
+        p.setPreferredIconSize(size);
+      }
+    }
 
     p.setFavFood(r.favFood());
     p.setFavDrink(r.favDrink());

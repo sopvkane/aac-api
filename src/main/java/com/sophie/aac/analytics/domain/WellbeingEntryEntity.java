@@ -27,6 +27,9 @@ public class WellbeingEntryEntity {
     @Column(name = "notes", length = 280)
     private String notes;
 
+    @Column(name = "profile_id", nullable = false)
+    private UUID profileId;
+
     @Column(name = "created_at", nullable = false)
     private Instant createdAt;
 
@@ -76,6 +79,14 @@ public class WellbeingEntryEntity {
 
     public void setNotes(String notes) {
         this.notes = notes;
+    }
+
+    public UUID getProfileId() {
+        return profileId;
+    }
+
+    public void setProfileId(UUID profileId) {
+        this.profileId = profileId;
     }
 
     public Instant getCreatedAt() {

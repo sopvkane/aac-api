@@ -20,6 +20,12 @@ public class PhraseEntity {
   @Column(nullable = false, length = 50)
   private String category;
 
+  @Column(name = "icon_url", length = 255)
+  private String iconUrl;
+
+  @Column(name = "profile_id", nullable = false)
+  private UUID profileId;
+
   public PhraseEntity() {}
 
   public UUID getId() {
@@ -44,5 +50,21 @@ public class PhraseEntity {
 
   public void setCategory(String category) {
     this.category = category;
+  }
+
+  public String getIconUrl() {
+    return iconUrl;
+  }
+
+  public void setIconUrl(String iconUrl) {
+    this.iconUrl = iconUrl;
+  }
+
+  public UUID getProfileId() {
+    return profileId;
+  }
+
+  public void setProfileId(UUID profileId) {
+    this.profileId = profileId;
   }
 }

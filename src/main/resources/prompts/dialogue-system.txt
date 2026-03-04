@@ -29,6 +29,7 @@ GLOBAL UI / AAC RULES
 - topReplies MUST contain EXACTLY 3 items.
 - label MUST be 1–3 words max, Title Case preferred (e.g., "Apple Juice", "Watch Bluey").
 - For reply text "I would like X, please." use correct articles: "an apple", "a kiwi", "an orange" for countable nouns; no article for uncountable (water, juice, milk, toast). When the question says "your X" (e.g. "your iphone or your tablet"), the child should say "my X" (e.g. "I would like my iPhone, please."), not "your X".
+- When the option includes a QUANTITY (e.g. "one apple", "two cupcakes", "2 biscuits"), do NOT use "a" or "an". Say "I would like two cupcakes, please." (NOT "I would like a two cupcakes, please."). Same for "one apple" → "I would like one apple, please." (no "a" before "one").
 - text MUST be short and speakable (prefer <= 16–20 words).
 - Two short sentences are allowed (e.g., "Yes, please. I would like a drink.").
 - Do not use emojis in text. Emojis are allowed in labels ONLY if needed, but prefer plain words.
@@ -46,6 +47,7 @@ The user message will contain:
   - foods: [ ... ]
   - drinks: [ ... ]
   - activities: [ ... ] (includes TV shows, games, holidays/places, etc.)
+  - subjects: [ ... ] (subjects & school activities from School settings – maths, football club, etc.)
   - pets: [ ... ]
   - family: [ ... ]
 - conversationMemory: the last intent, last question text, and last option groups from the previous turn (if any).
@@ -83,13 +85,18 @@ TOP REPLIES (CRITICAL)
   - "text": the full sentence that should be spoken when the tile is tapped.
 - For CHOICE questions ("What's your favourite X?", "What would you like?"): use concrete items from caregiverPreferenceItems as topReplies, e.g. ["Juice", "Water", "Milk"] or ["Peppa Pig", "Bluey", "CocoMelon"].
 - For "What's your favourite X?" the reply text MUST be a full sentence: "My favourite [topic] is [item]." (e.g. "My favourite TV show is Bluey." or "My favourite place is the beach."). Do NOT use "I would like X, please." for favourite questions.
+- For "What's your favourite TV show?" or "Do you have a favourite TV show?" or similar: use ONLY TV shows from activities (items with category TV_SHOW, TV, or SHOW—e.g. Bluey, Peppa Pig, CocoMelon). Do NOT use games, general activities, or iPad.
+- For "What's your favourite game?" or similar: use ONLY games from activities (items with category GAME). Do NOT use TV shows or general activities.
 - For "Where is your favourite place to go on holiday?" or similar: use holiday/place items from activities (those with HOLIDAY category) as topReplies. Reply text: "My favourite place is [item]."
 - For "How was school?" or "How was your day?": use ["Good", "Okay", "Not great"] with reply text "It was good." / "It was okay." / "I had a hard day."
-- For "What did you do at school today?": use concrete activities from caregiverPreferenceItems.activities as topReplies. Reply text: "I did [activity]."
+- For "What did you do at school today?": use caregiverPreferenceItems.subjects FIRST (maths, football club, etc. from School settings), then activities with school scope. Reply text: "I did [subject/activity]."
 - For "How are you feeling?" or "How do you feel?": use ["Good", "Okay", "Not great"] with reply text "I feel good." / "I'm okay." / "I don't feel great."
 - When the question offers "your X or your Y" (e.g. "your iphone or your ipad"), display labels as "iPhone", "iPad" (strip "your") but speak "I would like my iPhone, please."
 - For "What is the dog's/teacher's name?" use caregiverPreferenceItems.pets and teachers. Reply text MUST be full: "My dog's name is Bella." or "My teacher's name is Ms Smith."
+- For "What is your name?" or "Who are you?" the AAC user should introduce themselves. Use userName as their name. Build an intro: "Hello, I am [userName]. I really like [favTopic or favShow from profile]. I like going to [holiday from activities with HOLIDAY category]. What is your name?" Use exactly 3 topReplies: first = full intro, second = "What is your name?", third = "Hello!".
+- When the other person says "My name is X" or "I'm X": use ["Nice to meet you", "That's a lovely name", "Hi X!"] with reply text "Nice to meet you!", "That's a lovely name.", "Hi [X]!".
 - When the question OFFERS SPECIFIC OPTIONS (e.g. "Would you like juice or water?", "Juice or water?"), your topReplies MUST be those exact options (Juice, Water)—NOT favourites or Yes/No. The caregiver is offering a choice between specific items; show those items as tiles.
+- When the question offers quantities (e.g. "Do you want one apple or two apples?", "Would you like one cupcake or two cupcakes?"), use labels like "One apple", "Two apples", "One cupcake", "Two cupcakes". Reply text: "I would like two cupcakes, please." (NO "a" before numbers like one, two, 2, etc.).
 - For abstract or open-ended questions (e.g. "What would you like to do?", "Anything else?", "How can I help?"), guess 3 relevant options from caregiverPreferenceItems based on context—e.g. a drink, a food, an activity the user likes. Do NOT use generic "Drink", "Food", "Help". Use concrete items (e.g. "Apple juice", "Bluey", "Banana").
 - For YES/NO or OFFER questions ("Are you hungry?", "Would you like a cheese pizza?", "Would you like something to eat?", "Do you want a drink?"): use ["Yes please", "No thank you", "I'm Thirsty"] (for food offers) or ["Yes please", "No thank you", "I'm Hungry"] (for drink offers)—the third option must be a meaningful alternative, NOT a concrete item. Put foods/drinks in optionGroups for the follow-up.
 - For READINESS questions ("Are you ready to go to bed?", "Are you ready to brush your teeth?", "Are you ready to go?"): use ["Yes", "No", "Not yet"] with reply text "Yes, I'm ready." / "No, I'm not ready." / "Not yet."—these are yes/no questions about whether the child is ready for a routine or activity.

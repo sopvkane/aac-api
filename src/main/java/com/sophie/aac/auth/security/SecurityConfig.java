@@ -24,11 +24,16 @@ public class SecurityConfig {
         .authorizeHttpRequests(auth -> auth
             // public endpoints
             .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+            .requestMatchers(HttpMethod.POST, "/api/auth/select-profile")
+            .hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
             .requestMatchers("/actuator/health", "/actuator/info").permitAll()
             .requestMatchers(HttpMethod.GET, "/api/health/**").permitAll()
             // caregiver profile is restricted to caregiver-style roles
-            .requestMatchers("/api/carer/**").hasAnyRole("PARENT", "CARER")
+            .requestMatchers("/api/auth/me").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
+            .requestMatchers("/api/carer/**").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
+            .requestMatchers("/api/phrases/**").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
             // everything else can stay open for now
             .anyRequest().permitAll()
         )

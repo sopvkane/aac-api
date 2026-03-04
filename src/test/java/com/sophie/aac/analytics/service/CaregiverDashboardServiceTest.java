@@ -5,10 +5,12 @@ import com.sophie.aac.analytics.domain.WellbeingEntryEntity;
 import com.sophie.aac.analytics.repository.InteractionEventRepository;
 import com.sophie.aac.analytics.repository.WellbeingEntryRepository;
 import com.sophie.aac.analytics.web.CaregiverDashboardResponse;
+import com.sophie.aac.auth.util.TestSecurityHelper;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import com.sophie.aac.profile.service.CaregiverProfileService;
 import com.sophie.aac.suggestions.domain.LocationCategory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +48,12 @@ class CaregiverDashboardServiceTest {
     interactionRepo.deleteAll();
     wellbeingRepo.deleteAll();
     ensureDefaultProfile();
+    TestSecurityHelper.setParentWithProfile();
+  }
+
+  @AfterEach
+  void tearDown() {
+    TestSecurityHelper.clear();
   }
 
   private void ensureDefaultProfile() {
@@ -77,7 +85,7 @@ class CaregiverDashboardServiceTest {
 
   @Test
   void getDashboard_returns_response_with_profile_data() {
-    CaregiverDashboardResponse resp = service.getDashboard("WEEK");
+    CaregiverDashboardResponse resp = service.getDashboard("WEEK", true);
     assertThat(resp.displayName()).isEqualTo("Caregiver");
     assertThat(resp.favFood()).isEqualTo("Apple");
     assertThat(resp.favDrink()).isEqualTo("Juice");
@@ -90,12 +98,13 @@ class CaregiverDashboardServiceTest {
   void getDashboard_includes_interactions() {
     InteractionEventEntity e = new InteractionEventEntity();
     e.setId(UUID.randomUUID());
+    e.setProfileId(CaregiverProfileService.DEFAULT_ID);
     e.setEventType("PHRASE_SELECTED");
     e.setLocation(LocationCategory.HOME);
     e.setCreatedAt(Instant.now());
     interactionRepo.save(e);
 
-    CaregiverDashboardResponse resp = service.getDashboard("DAY");
+    CaregiverDashboardResponse resp = service.getDashboard("DAY", true);
     assertThat(resp.totalInteractionsLast7Days()).isEqualTo(1);
   }
 
@@ -103,13 +112,14 @@ class CaregiverDashboardServiceTest {
   void getDashboard_includes_pain_wellbeing() {
     WellbeingEntryEntity w = new WellbeingEntryEntity();
     w.setId(UUID.randomUUID());
+    w.setProfileId(CaregiverProfileService.DEFAULT_ID);
     w.setSymptomType("PAIN");
     w.setBodyArea("head");
     w.setSeverity(5);
     w.setCreatedAt(Instant.now());
     wellbeingRepo.save(w);
 
-    CaregiverDashboardResponse resp = service.getDashboard("WEEK");
+    CaregiverDashboardResponse resp = service.getDashboard("WEEK", true);
     assertThat(resp.wellbeingEntriesLast7Days()).isEqualTo(1);
     assertThat(resp.painEventsLast7Days()).isEqualTo(1);
     assertThat(resp.averagePainSeverityLast7Days()).isEqualTo(5.0);
@@ -118,10 +128,10 @@ class CaregiverDashboardServiceTest {
 
   @Test
   void getDashboard_accepts_period_aliases() {
-    CaregiverDashboardResponse day = service.getDashboard("1D");
+    CaregiverDashboardResponse day = service.getDashboard("1D", true);
     assertThat(day.period()).isEqualTo("DAY");
 
-    CaregiverDashboardResponse month = service.getDashboard("30D");
+    CaregiverDashboardResponse month = service.getDashboard("30D", true);
     assertThat(month.period()).isEqualTo("MONTH");
   }
 }

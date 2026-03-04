@@ -7,6 +7,8 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequestMapping("/api/tts")
 public class TtsController {
@@ -15,6 +17,11 @@ public class TtsController {
 
     public TtsController(TtsService ttsService) {
         this.ttsService = ttsService;
+    }
+
+    @GetMapping("/provider")
+    public ResponseEntity<Map<String, String>> provider() {
+        return ResponseEntity.ok(Map.of("provider", ttsService.getActiveProvider()));
     }
 
     @PostMapping(produces = "audio/mpeg")
