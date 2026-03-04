@@ -37,7 +37,7 @@ public class PhraseController {
   @PostMapping
   @ResponseStatus(HttpStatus.CREATED)
   public ResponseEntity<PhraseResponse> create(@Valid @RequestBody CreatePhraseRequest req) {
-    var saved = service.create(req.text(), req.category());
+    var saved = service.create(req.text(), req.category(), req.iconUrl());
     return ResponseEntity
         .created(URI.create("/api/phrases/" + saved.getId()))
         .body(PhraseResponse.from(saved));
@@ -48,7 +48,7 @@ public class PhraseController {
       @PathVariable UUID id,
       @Valid @RequestBody UpdatePhraseRequest req
   ) {
-    var saved = service.update(id, req.text(), req.category());
+    var saved = service.update(id, req.text(), req.category(), req.iconUrl());
     return ResponseEntity.ok(PhraseResponse.from(saved));
   }
 

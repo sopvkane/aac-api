@@ -9,6 +9,6 @@ import java.util.UUID;
 
 public interface WellbeingEntryRepository extends JpaRepository<WellbeingEntryEntity, UUID> {
 
-    List<WellbeingEntryEntity> findByCreatedAtAfter(Instant since);
+    List<WellbeingEntryEntity> findByProfileIdAndCreatedAtAfter(UUID profileId, Instant since);
 }
 

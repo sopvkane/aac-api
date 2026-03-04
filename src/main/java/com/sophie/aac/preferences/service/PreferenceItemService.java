@@ -1,5 +1,6 @@
 package com.sophie.aac.preferences.service;
 
+import com.sophie.aac.auth.util.CurrentProfile;
 import com.sophie.aac.preferences.domain.PreferenceItemEntity;
 import com.sophie.aac.preferences.repository.PreferenceItemRepository;
 import com.sophie.aac.preferences.web.PreferenceItemRequest;
@@ -19,14 +20,52 @@ public class PreferenceItemService {
         this.repo = repo;
     }
 
+    /**
+     * Returns preferences for the current profile. When unauthenticated (guest), returns empty list
+     * so guests see no saved preference data.
+     */
     public List<PreferenceItemEntity> listByKind(String kind) {
-        return repo.findByKindOrderByPriorityDescLabelAsc(kind.toUpperCase());
+        UUID profileId = CurrentProfile.get();
+        if (profileId == null) {
+            return List.of();
+        }
+        return repo.findByProfileIdAndKindOrderByPriorityDescLabelAsc(profileId, kind.toUpperCase());
+    }
+
+    public PreferenceItemEntity findById(UUID id) {
+        return repo.findById(id).orElse(null);
+    }
+
+    /**
+     * Returns "who to ask" people for the Speak tab, filtered by location.
+     * HOME → family only; SCHOOL → teachers only; BUS → bus staff only.
+     * Returns empty when unauthenticated (guest).
+     */
+    public List<PreferenceItemEntity> listWhoToAskByLocation(String location) {
+        UUID profileId = CurrentProfile.get();
+        if (profileId == null) {
+            return List.of();
+        }
+        if (location == null || location.isBlank()) location = "HOME";
+        String loc = location.toUpperCase();
+        if ("BUS".equals(loc)) {
+            return repo.findByProfileIdAndKindInAndScopeInOrderByPriorityDescLabelAsc(
+                profileId, List.of("BUS_STAFF"), List.of("SCHOOL", "BOTH"));
+        }
+        if ("SCHOOL".equals(loc)) {
+            return repo.findByProfileIdAndKindInAndScopeInOrderByPriorityDescLabelAsc(
+                profileId, List.of("TEACHER"), List.of("SCHOOL", "BOTH"));
+        }
+        return repo.findByProfileIdAndKindInAndScopeInOrderByPriorityDescLabelAsc(
+            profileId, List.of("FAMILY_MEMBER"), List.of("HOME", "BOTH"));
     }
 
     @Transactional
     public PreferenceItemEntity create(PreferenceItemRequest req, String createdByRole) {
+        UUID profileId = CurrentProfile.require();
         PreferenceItemEntity e = new PreferenceItemEntity();
         e.setId(UUID.randomUUID());
+        e.setProfileId(profileId);
         e.setKind(req.kind().toUpperCase());
         e.setLabel(req.label().trim());
         e.setCategory(trimOrNull(req.category()));
@@ -43,8 +82,12 @@ public class PreferenceItemService {
 
     @Transactional
     public PreferenceItemEntity update(UUID id, PreferenceItemRequest req) {
+        UUID profileId = CurrentProfile.require();
         PreferenceItemEntity e = repo.findById(id)
             .orElseThrow(() -> new IllegalArgumentException("Preference item not found"));
+        if (!e.getProfileId().equals(profileId)) {
+            throw new IllegalArgumentException("Preference item not found");
+        }
 
         e.setKind(req.kind().toUpperCase());
         e.setLabel(req.label().trim());
@@ -61,6 +104,11 @@ public class PreferenceItemService {
 
     @Transactional
     public void delete(UUID id) {
+        UUID profileId = CurrentProfile.require();
+        PreferenceItemEntity e = repo.findById(id).orElse(null);
+        if (e != null && !e.getProfileId().equals(profileId)) {
+            throw new IllegalArgumentException("Preference item not found");
+        }
         repo.deleteById(id);
     }
 

@@ -2,6 +2,7 @@ package com.sophie.aac.wellbeing.service;
 
 import com.sophie.aac.analytics.domain.WellbeingEntryEntity;
 import com.sophie.aac.analytics.repository.WellbeingEntryRepository;
+import com.sophie.aac.auth.util.CurrentProfile;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,8 +20,10 @@ public class WellbeingService {
 
     @Transactional
     public void recordMood(int moodScore) {
+        UUID profileId = CurrentProfile.getOrDefault();
         WellbeingEntryEntity e = new WellbeingEntryEntity();
         e.setId(UUID.randomUUID());
+        e.setProfileId(profileId);
         e.setMoodScore(moodScore);
         e.setCreatedAt(Instant.now());
         repo.save(e);
@@ -28,8 +31,10 @@ public class WellbeingService {
 
     @Transactional
     public void recordPain(String bodyArea, Integer severity, String notes) {
+        UUID profileId = CurrentProfile.getOrDefault();
         WellbeingEntryEntity e = new WellbeingEntryEntity();
         e.setId(UUID.randomUUID());
+        e.setProfileId(profileId);
         e.setSymptomType("PAIN");
         e.setBodyArea(bodyArea);
         e.setSeverity(severity);

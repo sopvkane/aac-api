@@ -20,6 +20,8 @@ public class AuthAccountSeeder {
   @Value("${PARENT_PIN:1234}") private String parentPin;
   @Value("${CARER_PIN:2345}") private String carerPin;
   @Value("${CLINICIAN_PIN:3456}") private String clinicianPin;
+  @Value("${SCHOOL_ADMIN_PIN:4567}") private String schoolAdminPin;
+  @Value("${SCHOOL_TEACHER_PIN:5678}") private String schoolTeacherPin;
 
   public AuthAccountSeeder(CaregiverAccountRepository repo, PasswordEncoder encoder) {
     this.repo = repo;
@@ -31,6 +33,8 @@ public class AuthAccountSeeder {
     seedRole(Role.PARENT, parentPin);
     seedRole(Role.CARER, carerPin);
     seedRole(Role.CLINICIAN, clinicianPin);
+    seedRole(Role.SCHOOL_ADMIN, schoolAdminPin);
+    seedRole(Role.SCHOOL_TEACHER, schoolTeacherPin);
   }
 
   private void seedRole(Role role, String pin) {

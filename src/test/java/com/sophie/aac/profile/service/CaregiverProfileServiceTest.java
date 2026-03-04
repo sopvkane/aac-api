@@ -1,9 +1,11 @@
 package com.sophie.aac.profile.service;
 
+import com.sophie.aac.auth.util.TestSecurityHelper;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import com.sophie.aac.profile.web.UpdateUserProfileRequest;
 import com.sophie.aac.suggestions.domain.LocationCategory;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,12 @@ class CaregiverProfileServiceTest {
   @BeforeEach
   void setUp() {
     ensureDefaultProfile();
+    TestSecurityHelper.setParentWithProfile();
+  }
+
+  @AfterEach
+  void tearDown() {
+    TestSecurityHelper.clear();
   }
 
   private void ensureDefaultProfile() {
@@ -52,6 +60,7 @@ class CaregiverProfileServiceTest {
     p.setAllowWork(false);
     p.setAllowOther(true);
     p.setMaxOptions(3);
+    p.setPreferredIconSize("large");
     p.setUpdatedAt(java.time.Instant.now());
     repo.save(p);
   }
@@ -65,11 +74,11 @@ class CaregiverProfileServiceTest {
   }
 
   @Test
-  void get_throws_when_missing() {
+  void get_throws_when_profile_missing() {
     repo.deleteAll();
     assertThatThrownBy(() -> service.get())
         .isInstanceOf(IllegalStateException.class)
-        .hasMessageContaining("Default user_profile row missing");
+        .hasMessageContaining("Profile not found");
   }
 
   @Test
@@ -88,6 +97,7 @@ class CaregiverProfileServiceTest {
         true,
         true,
         5,
+        "large",
         "Pizza",
         "Water",
         "Show",
@@ -109,5 +119,6 @@ class CaregiverProfileServiceTest {
     assertThat(updated.getFavDrink()).isEqualTo("Water");
     assertThat(updated.getMaxOptions()).isEqualTo(5);
     assertThat(updated.getDefaultLocation()).isEqualTo(LocationCategory.SCHOOL);
+    assertThat(updated.getPreferredIconSize()).isEqualTo("large");
   }
 }

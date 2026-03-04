@@ -17,6 +17,7 @@ public record UpdateUserProfileRequest(
     boolean allowWork,
     boolean allowOther,
     @Min(1) @Max(6) int maxOptions,
+    @Size(max = 16) String preferredIconSize,
     @Size(max = 50) String favFood,
     @Size(max = 50) String favDrink,
     @Size(max = 50) String favShow,

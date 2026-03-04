@@ -10,8 +10,10 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import java.time.Instant;
 import java.util.EnumMap;
+import java.util.List;
 import java.util.Map;
 
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -35,16 +37,17 @@ class CaregiverDashboardControllerTest {
     }
     CaregiverDashboardResponse resp = new CaregiverDashboardResponse(
         "WEEK", Instant.now(), "User", "Apple", "Juice", "Show", buckets,
-        10L, 2L, 5L, 1L, 4.0, Map.of("HEAD", 1L)
+        10L, 2L, 5L, 1L, 4.0, 0L, null,         Map.of("HEAD", 1L),
+        Map.of(), Map.of(), Map.of("HEAD", 100.0), List.of(), List.of(), List.of()
     );
-    when(service.getDashboard("WEEK")).thenReturn(resp);
+    when(service.getDashboard(eq("WEEK"), anyBoolean())).thenReturn(resp);
 
     mvc.perform(get("/api/carer/dashboard").param("period", "WEEK"))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.displayName").value("User"))
         .andExpect(jsonPath("$.period").value("WEEK"));
 
-    verify(service).getDashboard("WEEK");
+    verify(service).getDashboard(eq("WEEK"), anyBoolean());
   }
 
   @Test
@@ -52,13 +55,14 @@ class CaregiverDashboardControllerTest {
     Map<TimeBucket, Long> buckets = new EnumMap<>(TimeBucket.class);
     for (TimeBucket b : TimeBucket.values()) buckets.put(b, 0L);
     CaregiverDashboardResponse resp = new CaregiverDashboardResponse(
-        "WEEK", Instant.now(), "U", null, null, null, buckets, 0L, 0L, 0L, 0L, null, Map.of()
+        "WEEK", Instant.now(), "U", null, null, null, buckets, 0L, 0L, 0L, 0L, null, 0L, null,         Map.of(),
+        Map.of(), Map.of(), Map.of(), List.of(), List.of(), List.of()
     );
-    when(service.getDashboard("WEEK")).thenReturn(resp);
+    when(service.getDashboard(eq("WEEK"), anyBoolean())).thenReturn(resp);
 
     mvc.perform(get("/api/carer/dashboard"))
         .andExpect(status().isOk());
 
-    verify(service).getDashboard("WEEK");
+    verify(service).getDashboard(eq("WEEK"), anyBoolean());
   }
 }

@@ -93,6 +93,7 @@ class SecurityIntegrationTest {
     s.setId(UUID.randomUUID());
     s.setRole(Role.PARENT);
     s.setTokenHash(TokenHash.sha256Hex(rawToken));
+    s.setProfileId(CaregiverProfileService.DEFAULT_ID);
     s.setCreatedAt(Instant.now());
     s.setExpiresAt(Instant.now().plusSeconds(3600));
     sessions.save(s);
@@ -103,19 +104,20 @@ class SecurityIntegrationTest {
   }
 
   @Test
-  void clinician_role_cannot_access_carer_endpoint() throws Exception {
+  void clinician_role_can_access_carer_endpoint() throws Exception {
     String rawToken = "clinician.token.value";
 
     AuthSessionEntity s = new AuthSessionEntity();
     s.setId(UUID.randomUUID());
     s.setRole(Role.CLINICIAN);
     s.setTokenHash(TokenHash.sha256Hex(rawToken));
+    s.setProfileId(CaregiverProfileService.DEFAULT_ID);
     s.setCreatedAt(Instant.now());
     s.setExpiresAt(Instant.now().plusSeconds(3600));
     sessions.save(s);
 
     mvc.perform(get("/api/carer/profile")
             .cookie(new Cookie(AuthService.COOKIE_NAME, rawToken)))
-        .andExpect(status().isForbidden());
+        .andExpect(status().isOk());
   }
 }

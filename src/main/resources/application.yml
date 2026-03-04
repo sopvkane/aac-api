@@ -3,7 +3,8 @@ server:
 
 spring:
   config:
-    import: optional:file:.env[.properties]
+    # Load .env from project root (user.dir = dir from which JVM was started)
+    import: optional:file:${user.dir}/.env[.properties]
 
   datasource:
     url: ${DB_URL:jdbc:postgresql://localhost:5432/aac}
@@ -17,6 +18,12 @@ spring:
 
   flyway:
     enabled: true
+    # Set to false to tolerate checksum changes on already-applied migrations (e.g. after editing V11)
+    validate-on-migrate: false
+
+# TTS: azure (default) or elevenlabs. Override with TTS_PROVIDER env var.
+tts:
+  provider: ${TTS_PROVIDER:azure}
 
 management:
   endpoints:

@@ -7,6 +7,10 @@ public final class PhraseSpecs {
 
     private PhraseSpecs() {}
 
+    public static Specification<PhraseEntity> profileIdEquals(java.util.UUID profileId) {
+        return (root, query, cb) -> cb.equal(root.get("profileId"), profileId);
+    }
+
     public static Specification<PhraseEntity> textContainsIgnoreCase(String q) {
         return (root, query, cb) ->
                 cb.like(cb.lower(root.get("text")), "%" + q.toLowerCase() + "%");

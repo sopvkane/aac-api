@@ -12,6 +12,14 @@ import java.util.HashMap;
 @RestControllerAdvice
 public class ApiExceptionHandler {
 
+  @ExceptionHandler(IllegalArgumentException.class)
+  public ProblemDetail handleIllegalArgument(IllegalArgumentException ex) {
+    ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);
+    pd.setTitle("Bad request");
+    pd.setDetail(ex.getMessage());
+    return pd;
+  }
+
   @ExceptionHandler(MethodArgumentNotValidException.class)
   public ProblemDetail handleValidation(MethodArgumentNotValidException ex) {
     ProblemDetail pd = ProblemDetail.forStatus(HttpStatus.BAD_REQUEST);

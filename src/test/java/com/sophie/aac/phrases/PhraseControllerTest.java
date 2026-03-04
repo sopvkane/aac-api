@@ -63,12 +63,12 @@ class PhraseControllerTest {
     p1.setText("Hello world");
     p1.setCategory("greeting");
 
-    when(phraseService.create("Hello world", "greeting")).thenReturn(p1);
+    when(phraseService.create("Hello world", "greeting", null)).thenReturn(p1);
 
     mvc.perform(
             post("/api/phrases")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("Hello world", "greeting"))))
+                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("Hello world", "greeting", null))))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", "/api/phrases/" + id1))
         .andExpect(jsonPath("$.id").value(id1.toString()))
@@ -82,12 +82,12 @@ class PhraseControllerTest {
     p2.setText("I want tea");
     p2.setCategory("needs");
 
-    when(phraseService.create("I want tea", "needs")).thenReturn(p2);
+    when(phraseService.create("I want tea", "needs", null)).thenReturn(p2);
 
     mvc.perform(
             post("/api/phrases")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("I want tea", "needs"))))
+                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("I want tea", "needs", null))))
         .andExpect(status().isCreated())
         .andExpect(header().string("Location", "/api/phrases/" + id2))
         .andExpect(jsonPath("$.id").value(id2.toString()));
@@ -148,18 +148,18 @@ class PhraseControllerTest {
     updated.setText("Updated text");
     updated.setCategory("updated-category");
 
-    when(phraseService.update(id, "Updated text", "updated-category")).thenReturn(updated);
+    when(phraseService.update(id, "Updated text", "updated-category", null)).thenReturn(updated);
 
     mvc.perform(
             put("/api/phrases/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new UpdatePhraseRequest("Updated text", "updated-category"))))
+                .content(objectMapper.writeValueAsString(new UpdatePhraseRequest("Updated text", "updated-category", null))))
         .andExpect(status().isOk())
         .andExpect(jsonPath("$.id").value(id.toString()))
         .andExpect(jsonPath("$.text").value("Updated text"))
         .andExpect(jsonPath("$.category").value("updated-category"));
 
-    verify(phraseService).update(id, "Updated text", "updated-category");
+    verify(phraseService).update(id, "Updated text", "updated-category", null);
   }
 
   @Test
@@ -178,7 +178,7 @@ class PhraseControllerTest {
     mvc.perform(
             post("/api/phrases")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("", ""))))
+                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("", "", null))))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.title").value("Validation failed"))
         .andExpect(jsonPath("$.status").value(400))
@@ -196,7 +196,7 @@ class PhraseControllerTest {
     mvc.perform(
             post("/api/phrases")
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("Hello", tooLongCategory))))
+                .content(objectMapper.writeValueAsString(new CreatePhraseRequest("Hello", tooLongCategory, null))))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errors.category", containsString("between 0 and 50")));
 
@@ -211,7 +211,7 @@ class PhraseControllerTest {
     mvc.perform(
             put("/api/phrases/{id}", id)
                 .contentType(MediaType.APPLICATION_JSON)
-                .content(objectMapper.writeValueAsString(new UpdatePhraseRequest(tooLongText, "general"))))
+                .content(objectMapper.writeValueAsString(new UpdatePhraseRequest(tooLongText, "general", null))))
         .andExpect(status().isBadRequest())
         .andExpect(jsonPath("$.errors.text", containsString("between 0 and 280")));
 

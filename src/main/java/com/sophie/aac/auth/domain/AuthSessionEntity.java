@@ -24,6 +24,15 @@ public class AuthSessionEntity {
   @Column(nullable = false)
   private Instant createdAt;
 
+  @Column(name = "profile_id")
+  private java.util.UUID profileId;
+
+  @Column(name = "user_account_id")
+  private UUID userAccountId;
+
+  @Column(name = "delegated_pin_id")
+  private UUID delegatedPinId;
+
   public UUID getId() { return id; }
   public void setId(UUID id) { this.id = id; }
 
@@ -38,4 +47,13 @@ public class AuthSessionEntity {
 
   public Instant getCreatedAt() { return createdAt; }
   public void setCreatedAt(Instant createdAt) { this.createdAt = createdAt; }
+
+  public java.util.UUID getProfileId() { return profileId; }
+  public void setProfileId(java.util.UUID profileId) { this.profileId = profileId; }
+
+  public UUID getUserAccountId() { return userAccountId; }
+  public void setUserAccountId(UUID userAccountId) { this.userAccountId = userAccountId; }
+
+  public UUID getDelegatedPinId() { return delegatedPinId; }
+  public void setDelegatedPinId(UUID delegatedPinId) { this.delegatedPinId = delegatedPinId; }
 }
