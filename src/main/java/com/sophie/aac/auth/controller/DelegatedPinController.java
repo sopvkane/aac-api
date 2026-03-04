@@ -12,6 +12,7 @@ import jakarta.validation.constraints.NotNull;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 @Tag(name = "Auth", description = "Authentication and profile management")
@@ -61,6 +62,7 @@ public class DelegatedPinController {
       @ApiResponse(responseCode = "404", description = "PIN not found")
   })
   @DeleteMapping("/{id}")
+  @ResponseStatus(HttpStatus.NO_CONTENT)
   public void revoke(@PathVariable UUID id) {
     delegatedPinService.revoke(id);
   }

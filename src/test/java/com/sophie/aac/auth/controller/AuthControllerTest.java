@@ -3,6 +3,7 @@ package com.sophie.aac.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sophie.aac.auth.domain.Role;
 import com.sophie.aac.auth.service.AuthService;
+import com.sophie.aac.common.web.ApiExceptionHandler;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -38,6 +39,7 @@ class AuthControllerTest {
 
     mvc = MockMvcBuilders
         .standaloneSetup(new AuthController(authService, profileRepo))
+        .setControllerAdvice(new ApiExceptionHandler())
         .build();
   }
 
@@ -64,6 +66,56 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.role").value("PARENT"));
 
     verify(authService).loginWithPin("1234");
+  }
+
+  @Test
+  void login_with_email_password_sets_cookie_and_returns_role() throws Exception {
+    var profileId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+    when(authService.loginWithPassword("user@test.com", "Password1!"))
+        .thenReturn(new AuthService.LoginResult(Role.PARENT, "token789", 240,
+            java.util.List.of(profileId),
+            profileId));
+
+    mvc.perform(post("/api/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest("user@test.com", "Password1!", null))))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Set-Cookie", containsString("AAC_SESSION=token789")))
+        .andExpect(jsonPath("$.role").value("PARENT"));
+
+    verify(authService).loginWithPassword("user@test.com", "Password1!");
+  }
+
+  @Test
+  void register_creates_account_and_returns_login_response() throws Exception {
+    var profileId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+    when(authService.loginWithPassword(eq("new@test.com"), any()))
+        .thenReturn(new AuthService.LoginResult(Role.PARENT, "token456", 240,
+            java.util.List.of(profileId),
+            profileId));
+
+    mvc.perform(post("/api/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(new AuthController.RegisterRequest(
+                "New User", "new@test.com", "Password1!@#", "PARENT_CARER", "DEMO2024"))))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Set-Cookie", containsString("AAC_SESSION=token456")))
+        .andExpect(jsonPath("$.role").value("PARENT"));
+
+    verify(authService).register("New User", "new@test.com", "Password1!@#", "PARENT_CARER", "DEMO2024");
+    verify(authService).loginWithPassword("new@test.com", "Password1!@#");
+  }
+
+  @Test
+  void register_invalid_joining_code_returns_400() throws Exception {
+    doThrow(new IllegalArgumentException("Invalid joining code"))
+        .when(authService).register(any(), any(), any(), any(), any());
+
+    mvc.perform(post("/api/auth/register")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(new AuthController.RegisterRequest(
+                "User", "u@test.com", "Password1!@#", "PARENT_CARER", "BADCODE"))))
+        .andExpect(status().isBadRequest());
   }
 
   @Test

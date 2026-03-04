@@ -206,6 +206,7 @@
                 <exclude>**/dialogue/**</exclude>
                 <exclude>**/speech/**</exclude>
                 <exclude>**/tts/**</exclude>
+                <exclude>**/auth/bootstrap/**</exclude>
               </excludes>
               <rules>
                 <rule>

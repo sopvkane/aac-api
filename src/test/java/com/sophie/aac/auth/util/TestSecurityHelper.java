@@ -32,6 +32,17 @@ public final class TestSecurityHelper {
     SecurityContextHolder.getContext().setAuthentication(auth);
   }
 
+  /** Sets SecurityContext with user account ID (for CurrentUser) and profile. */
+  public static void setUserWithProfile(UUID userId) {
+    var auth = new UsernamePasswordAuthenticationToken(
+        "test",
+        null,
+        AuthorityUtils.createAuthorityList("ROLE_PARENT")
+    );
+    auth.setDetails(Map.of("userId", userId, "profileId", DEFAULT_PROFILE_ID));
+    SecurityContextHolder.getContext().setAuthentication(auth);
+  }
+
   public static void clear() {
     SecurityContextHolder.clearContext();
   }
