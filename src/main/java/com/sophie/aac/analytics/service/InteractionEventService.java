@@ -2,7 +2,7 @@ package com.sophie.aac.analytics.service;
 
 import com.sophie.aac.analytics.domain.InteractionEventEntity;
 import com.sophie.aac.analytics.repository.InteractionEventRepository;
-import com.sophie.aac.auth.util.CurrentProfile;
+import com.sophie.aac.auth.util.AuthContext;
 import com.sophie.aac.suggestions.domain.LocationCategory;
 import java.time.Instant;
 import java.util.UUID;
@@ -13,14 +13,16 @@ import org.springframework.transaction.annotation.Transactional;
 public class InteractionEventService {
 
   private final InteractionEventRepository repo;
+  private final AuthContext authContext;
 
-  public InteractionEventService(InteractionEventRepository repo) {
+  public InteractionEventService(InteractionEventRepository repo, AuthContext authContext) {
     this.repo = repo;
+    this.authContext = authContext;
   }
 
   @Transactional
   public void record(String eventType, LocationCategory location, String promptType, String selectedText) {
-    UUID profileId = CurrentProfile.getOrDefault();
+    UUID profileId = authContext.currentProfileIdOrDefault();
     InteractionEventEntity e = new InteractionEventEntity();
     e.setId(UUID.randomUUID());
     e.setProfileId(profileId);

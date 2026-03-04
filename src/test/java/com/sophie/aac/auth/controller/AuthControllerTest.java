@@ -3,6 +3,7 @@ package com.sophie.aac.auth.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sophie.aac.auth.domain.Role;
 import com.sophie.aac.auth.service.AuthService;
+import com.sophie.aac.auth.util.AuthContext;
 import com.sophie.aac.common.web.ApiExceptionHandler;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -26,11 +27,14 @@ class AuthControllerTest {
   private MockMvc mvc;
   private ObjectMapper objectMapper;
   private AuthService authService;
+  private AuthContext authContext;
 
   @BeforeEach
   void setUp() {
     objectMapper = new ObjectMapper();
     authService = mock(AuthService.class);
+    authContext = mock(AuthContext.class);
+    when(authContext.currentProfileId()).thenReturn(java.util.UUID.fromString("00000000-0000-0000-0000-000000000001"));
     UserProfileRepository profileRepo = mock(UserProfileRepository.class);
     var defaultProfile = new com.sophie.aac.profile.domain.UserProfileEntity();
     defaultProfile.setId(java.util.UUID.fromString("00000000-0000-0000-0000-000000000001"));
@@ -38,7 +42,7 @@ class AuthControllerTest {
     when(profileRepo.findAllById(any())).thenReturn(java.util.List.of(defaultProfile));
 
     mvc = MockMvcBuilders
-        .standaloneSetup(new AuthController(authService, profileRepo))
+        .standaloneSetup(new AuthController(authService, profileRepo, authContext))
         .setControllerAdvice(new ApiExceptionHandler())
         .build();
   }

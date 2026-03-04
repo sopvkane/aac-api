@@ -32,7 +32,7 @@ public final class TestSecurityHelper {
     SecurityContextHolder.getContext().setAuthentication(auth);
   }
 
-  /** Sets SecurityContext with user account ID (for CurrentUser) and profile. */
+  /** Sets SecurityContext with user account ID and profile. */
   public static void setUserWithProfile(UUID userId) {
     var auth = new UsernamePasswordAuthenticationToken(
         "test",

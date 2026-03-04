@@ -1,7 +1,8 @@
 package com.sophie.aac.profile.controller;
 
 import com.sophie.aac.auth.domain.Role;
-import com.sophie.aac.auth.util.CurrentRole;
+import com.sophie.aac.auth.util.AuthContext;
+import com.sophie.aac.common.web.ForbiddenException;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.service.CaregiverProfileService;
 import com.sophie.aac.profile.service.ProfileSetupService;
@@ -15,7 +16,6 @@ import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 @RestController
 @RequestMapping("/api/carer")
@@ -23,10 +23,16 @@ public class CarerProfileController {
 
   private final CaregiverProfileService service;
   private final ProfileSetupService profileSetupService;
+  private final AuthContext authContext;
 
-  public CarerProfileController(CaregiverProfileService service, ProfileSetupService profileSetupService) {
+  public CarerProfileController(
+      CaregiverProfileService service,
+      ProfileSetupService profileSetupService,
+      AuthContext authContext
+  ) {
     this.service = service;
     this.profileSetupService = profileSetupService;
+    this.authContext = authContext;
   }
 
   @Operation(summary = "Create profile", description = "Create a new communicator profile linked to the current account. Used for the 'set up' / registration flow when adding a new communicator. Requires auth.")
@@ -49,9 +55,9 @@ public class CarerProfileController {
 
   @PutMapping("/profile")
   public UserProfileResponse update(@RequestBody @Valid UpdateUserProfileRequest req) {
-    Role role = CurrentRole.get();
+    Role role = authContext.currentRole();
     if (role != Role.PARENT && role != Role.CLINICIAN) {
-      throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only parent or clinician can update profile");
+      throw new ForbiddenException("Only parent or clinician can update profile");
     }
     return toResponse(service.update(req));
   }

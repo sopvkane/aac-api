@@ -134,4 +134,23 @@ class CaregiverDashboardServiceTest {
     CaregiverDashboardResponse month = service.getDashboard("30D", true);
     assertThat(month.period()).isEqualTo("MONTH");
   }
+
+  @Test
+  void getDashboard_without_pain_hides_pain_metrics() {
+    WellbeingEntryEntity w = new WellbeingEntryEntity();
+    w.setId(UUID.randomUUID());
+    w.setProfileId(CaregiverProfileService.DEFAULT_ID);
+    w.setSymptomType("PAIN");
+    w.setBodyArea("head");
+    w.setSeverity(5);
+    w.setCreatedAt(Instant.now());
+    wellbeingRepo.save(w);
+
+    CaregiverDashboardResponse resp = service.getDashboard("WEEK", false);
+    assertThat(resp.painEventsLast7Days()).isEqualTo(0);
+    assertThat(resp.averagePainSeverityLast7Days()).isNull();
+    assertThat(resp.painByBodyArea()).isEmpty();
+    assertThat(resp.painChartItems()).isEmpty();
+    assertThat(resp.painSeverityTimeSeries()).isEmpty();
+  }
 }

@@ -2,6 +2,8 @@ package com.sophie.aac.analytics.controller;
 
 import com.sophie.aac.analytics.service.CaregiverDashboardService;
 import com.sophie.aac.analytics.web.CaregiverDashboardResponse;
+import com.sophie.aac.auth.domain.Role;
+import com.sophie.aac.auth.util.AuthContext;
 import com.sophie.aac.suggestions.domain.TimeBucket;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,11 +24,14 @@ class CaregiverDashboardControllerTest {
 
   private MockMvc mvc;
   private CaregiverDashboardService service;
+  private AuthContext authContext;
 
   @BeforeEach
   void setUp() {
     service = mock(CaregiverDashboardService.class);
-    mvc = MockMvcBuilders.standaloneSetup(new CaregiverDashboardController(service)).build();
+    authContext = mock(AuthContext.class);
+    when(authContext.currentRole()).thenReturn(Role.PARENT);
+    mvc = MockMvcBuilders.standaloneSetup(new CaregiverDashboardController(service, authContext)).build();
   }
 
   @Test

@@ -4,8 +4,9 @@ import com.sophie.aac.auth.domain.DelegatedPinEntity;
 import com.sophie.aac.auth.domain.UserAccountProfileEntity;
 import com.sophie.aac.auth.repository.DelegatedPinRepository;
 import com.sophie.aac.auth.repository.UserAccountProfileRepository;
-import com.sophie.aac.auth.util.CurrentProfile;
+import com.sophie.aac.auth.util.AuthContext;
 import com.sophie.aac.auth.util.TestSecurityHelper;
+import com.sophie.aac.common.web.UnauthorizedException;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import com.sophie.aac.suggestions.domain.LocationCategory;
@@ -56,14 +57,14 @@ class DelegatedPinServiceTest {
     userId = UUID.randomUUID();
     var link = new UserAccountProfileEntity();
     link.setUserId(userId);
-    link.setProfileId(CurrentProfile.DEFAULT_ID);
+    link.setProfileId(AuthContext.DEFAULT_PROFILE_ID);
     userAccountProfileRepo.save(link);
   }
 
   private void ensureDefaultProfile() {
-    if (profileRepo.findById(CurrentProfile.DEFAULT_ID).isEmpty()) {
+    if (profileRepo.findById(AuthContext.DEFAULT_PROFILE_ID).isEmpty()) {
       var p = new UserProfileEntity();
-      p.setId(CurrentProfile.DEFAULT_ID);
+      p.setId(AuthContext.DEFAULT_PROFILE_ID);
       p.setDisplayName("Test");
       p.setWakeName("Hey");
       p.setDetailsDefault(true);
@@ -92,11 +93,11 @@ class DelegatedPinServiceTest {
   void create_success_saves_pin() {
     TestSecurityHelper.setUserWithProfile(userId);
 
-    DelegatedPinEntity created = delegatedPinService.create("Grandma", "1234", CurrentProfile.DEFAULT_ID);
+    DelegatedPinEntity created = delegatedPinService.create("Grandma", "1234", AuthContext.DEFAULT_PROFILE_ID);
 
     assertThat(created.getId()).isNotNull();
     assertThat(created.getLabel()).isEqualTo("Grandma");
-    assertThat(created.getProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
+    assertThat(created.getProfileId()).isEqualTo(AuthContext.DEFAULT_PROFILE_ID);
     assertThat(created.isActive()).isTrue();
     assertThat(encoder.matches("1234", created.getPinHash())).isTrue();
     assertThat(delegatedPinRepo.count()).isEqualTo(1);
@@ -104,8 +105,8 @@ class DelegatedPinServiceTest {
 
   @Test
   void create_unauthorized_when_no_user() {
-    assertThatThrownBy(() -> delegatedPinService.create("X", "1234", CurrentProfile.DEFAULT_ID))
-        .isInstanceOf(org.springframework.web.server.ResponseStatusException.class)
+    assertThatThrownBy(() -> delegatedPinService.create("X", "1234", AuthContext.DEFAULT_PROFILE_ID))
+        .isInstanceOf(UnauthorizedException.class)
         .hasMessageContaining("Sign in to create a PIN");
   }
 
@@ -117,8 +118,8 @@ class DelegatedPinServiceTest {
   @Test
   void list_returns_pins_created_by_user() {
     TestSecurityHelper.setUserWithProfile(userId);
-    delegatedPinService.create("A", "1111", CurrentProfile.DEFAULT_ID);
-    delegatedPinService.create("B", "2222", CurrentProfile.DEFAULT_ID);
+    delegatedPinService.create("A", "1111", AuthContext.DEFAULT_PROFILE_ID);
+    delegatedPinService.create("B", "2222", AuthContext.DEFAULT_PROFILE_ID);
 
     List<DelegatedPinEntity> list = delegatedPinService.listByCurrentUser();
 

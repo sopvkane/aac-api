@@ -1,21 +1,18 @@
 package com.sophie.aac.profile.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.sophie.aac.auth.domain.Role;
+import com.sophie.aac.auth.util.AuthContext;
+import com.sophie.aac.common.web.ApiExceptionHandler;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.service.CaregiverProfileService;
 import com.sophie.aac.profile.service.ProfileSetupService;
-import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.web.CreateProfileRequest;
 import com.sophie.aac.profile.web.UpdateUserProfileRequest;
-import com.sophie.aac.profile.web.UserProfileResponse;
 import com.sophie.aac.suggestions.domain.LocationCategory;
-import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.AuthorityUtils;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
@@ -33,26 +30,21 @@ class CarerProfileControllerTest {
   private ObjectMapper objectMapper;
   private CaregiverProfileService service;
   private ProfileSetupService profileSetupService;
+  private AuthContext authContext;
 
   @BeforeEach
   void setUp() {
     objectMapper = new ObjectMapper();
     service = mock(CaregiverProfileService.class);
     profileSetupService = mock(ProfileSetupService.class);
+    authContext = mock(AuthContext.class);
+    when(authContext.currentRole()).thenReturn(Role.PARENT);
     LocalValidatorFactoryBean validator = new LocalValidatorFactoryBean();
     validator.afterPropertiesSet();
-    mvc = MockMvcBuilders.standaloneSetup(new CarerProfileController(service, profileSetupService))
+    mvc = MockMvcBuilders.standaloneSetup(new CarerProfileController(service, profileSetupService, authContext))
+        .setControllerAdvice(new ApiExceptionHandler())
         .setValidator(validator)
         .build();
-    // Simulate PARENT role so profile update is allowed (only PARENT/CLINICIAN can update)
-    SecurityContextHolder.getContext().setAuthentication(
-        new UsernamePasswordAuthenticationToken("test", "n/a",
-            AuthorityUtils.createAuthorityList("ROLE_PARENT")));
-  }
-
-  @AfterEach
-  void tearDown() {
-    SecurityContextHolder.clearContext();
   }
 
   @Test
@@ -93,9 +85,7 @@ class CarerProfileControllerTest {
 
   @Test
   void update_returns_403_for_carer_role() throws Exception {
-    SecurityContextHolder.getContext().setAuthentication(
-        new UsernamePasswordAuthenticationToken("carer", "n/a",
-            AuthorityUtils.createAuthorityList("ROLE_CARER")));
+    when(authContext.currentRole()).thenReturn(Role.CARER);
 
     UpdateUserProfileRequest req = new UpdateUserProfileRequest(
         "New Name", "Hey", true, false, true, true, true, LocationCategory.HOME,

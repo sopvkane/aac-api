@@ -2,7 +2,9 @@ package com.sophie.aac.auth.controller;
 
 import com.sophie.aac.auth.domain.Role;
 import com.sophie.aac.auth.service.AuthService;
-import com.sophie.aac.auth.util.CurrentProfile;
+import com.sophie.aac.auth.util.AuthContext;
+import com.sophie.aac.common.web.BadRequestException;
+import com.sophie.aac.common.web.UnauthorizedException;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -24,10 +26,12 @@ public class AuthController {
 
   private final AuthService auth;
   private final UserProfileRepository profileRepo;
+  private final AuthContext authContext;
 
-  public AuthController(AuthService auth, UserProfileRepository profileRepo) {
+  public AuthController(AuthService auth, UserProfileRepository profileRepo, AuthContext authContext) {
     this.auth = auth;
     this.profileRepo = profileRepo;
+    this.authContext = authContext;
   }
 
   public record ProfileSummary(java.util.UUID id, String displayName) {}
@@ -51,8 +55,7 @@ public class AuthController {
     } else if (req.pin() != null && !req.pin().isBlank()) {
       result = auth.loginWithPin(req.pin());
     } else {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.BAD_REQUEST, "Provide email+password or pin");
+      throw new BadRequestException("Provide email+password or pin");
     }
 
     ResponseCookie cookie = ResponseCookie.from(AuthService.COOKIE_NAME, result.token())
@@ -105,8 +108,7 @@ public class AuthController {
     org.springframework.security.core.Authentication authn =
         org.springframework.security.core.context.SecurityContextHolder.getContext().getAuthentication();
     if (authn == null || !authn.isAuthenticated()) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.UNAUTHORIZED, "Not logged in");
+      throw new UnauthorizedException("Not logged in");
     }
     String roleStr = authn.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
     Role role = Role.valueOf(roleStr);
@@ -149,12 +151,11 @@ public class AuthController {
   @GetMapping("/me")
   public MeResponse me(org.springframework.security.core.Authentication authn, HttpServletRequest req) {
     if (authn == null || !authn.isAuthenticated()) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.UNAUTHORIZED, "Not logged in");
+      throw new UnauthorizedException("Not logged in");
     }
     String roleStr = authn.getAuthorities().iterator().next().getAuthority().replace("ROLE_", "");
     Role role = Role.valueOf(roleStr);
-    java.util.UUID activeProfileId = CurrentProfile.get();
+    java.util.UUID activeProfileId = authContext.currentProfileId();
     String token = readCookie(req, AuthService.COOKIE_NAME);
     java.util.List<java.util.UUID> profileIds = auth.getProfileIdsForSession(token);
     var profiles = toProfileSummaries(profileRepo.findAllById(profileIds));

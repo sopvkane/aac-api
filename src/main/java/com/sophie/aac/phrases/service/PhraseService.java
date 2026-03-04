@@ -1,6 +1,6 @@
 package com.sophie.aac.phrases.service;
 
-import com.sophie.aac.auth.util.CurrentProfile;
+import com.sophie.aac.auth.util.AuthContext;
 import com.sophie.aac.phrases.domain.PhraseEntity;
 import com.sophie.aac.phrases.domain.PhraseNotFoundException;
 import com.sophie.aac.phrases.repository.PhraseRepository;
@@ -19,14 +19,16 @@ import java.util.UUID;
 public class PhraseService {
 
   private final PhraseRepository repo;
+  private final AuthContext authContext;
 
-  public PhraseService(PhraseRepository repo) {
+  public PhraseService(PhraseRepository repo, AuthContext authContext) {
     this.repo = repo;
+    this.authContext = authContext;
   }
 
   @Transactional(readOnly = true)
   public List<PhraseEntity> list(Optional<String> q, Optional<String> category) {
-    UUID profileId = CurrentProfile.require();
+    UUID profileId = authContext.requireCurrentProfileId();
     Specification<PhraseEntity> spec = PhraseSpecs.profileIdEquals(profileId);
 
     if (q.isPresent() && !q.get().isBlank()) {
@@ -41,7 +43,7 @@ public class PhraseService {
 
   @Transactional
   public PhraseEntity create(String text, String category, String iconUrl) {
-    UUID profileId = CurrentProfile.require();
+    UUID profileId = authContext.requireCurrentProfileId();
     var entity = new PhraseEntity();
     entity.setId(UUID.randomUUID());
     entity.setProfileId(profileId);
@@ -53,7 +55,7 @@ public class PhraseService {
 
   @Transactional
   public PhraseEntity update(UUID id, String text, String category, String iconUrl) {
-    UUID profileId = CurrentProfile.require();
+    UUID profileId = authContext.requireCurrentProfileId();
     var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
     if (!entity.getProfileId().equals(profileId)) {
       throw new PhraseNotFoundException(id);
@@ -66,7 +68,7 @@ public class PhraseService {
 
   @Transactional(readOnly = true)
   public PhraseEntity get(UUID id) {
-    UUID profileId = CurrentProfile.require();
+    UUID profileId = authContext.requireCurrentProfileId();
     var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
     if (!entity.getProfileId().equals(profileId)) {
       throw new PhraseNotFoundException(id);
@@ -77,7 +79,7 @@ public class PhraseService {
 
   @Transactional
   public void delete(UUID id) {
-    UUID profileId = CurrentProfile.require();
+    UUID profileId = authContext.requireCurrentProfileId();
     var entity = repo.findById(id).orElseThrow(() -> new PhraseNotFoundException(id));
     if (!entity.getProfileId().equals(profileId)) {
       throw new PhraseNotFoundException(id);

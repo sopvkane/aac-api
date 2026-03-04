@@ -14,7 +14,7 @@ import com.sophie.aac.auth.repository.DelegatedPinRepository;
 import com.sophie.aac.auth.repository.JoiningCodeRepository;
 import com.sophie.aac.auth.repository.UserAccountProfileRepository;
 import com.sophie.aac.auth.repository.UserAccountRepository;
-import com.sophie.aac.auth.util.CurrentProfile;
+import com.sophie.aac.auth.util.AuthContext;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.UUID;
@@ -84,9 +84,9 @@ class AuthServiceTest {
   }
 
   private void ensureDefaultProfile() {
-    if (profileRepo.findById(CurrentProfile.DEFAULT_ID).isEmpty()) {
+    if (profileRepo.findById(AuthContext.DEFAULT_PROFILE_ID).isEmpty()) {
       var p = new com.sophie.aac.profile.domain.UserProfileEntity();
-      p.setId(CurrentProfile.DEFAULT_ID);
+      p.setId(AuthContext.DEFAULT_PROFILE_ID);
       p.setDisplayName("Test");
       p.setWakeName("Hey");
       p.setDetailsDefault(true);
@@ -117,7 +117,7 @@ class AuthServiceTest {
 
     CaregiverAccountProfileEntity ap = new CaregiverAccountProfileEntity();
     ap.setAccountId(acc.getId());
-    ap.setProfileId(CurrentProfile.DEFAULT_ID);
+    ap.setProfileId(AuthContext.DEFAULT_PROFILE_ID);
     accountProfileRepo.save(ap);
   }
 
@@ -127,8 +127,8 @@ class AuthServiceTest {
     assertThat(result.role()).isEqualTo(Role.PARENT);
     assertThat(result.token()).isNotBlank();
     assertThat(result.ttlMinutes()).isPositive();
-    assertThat(result.profileIds()).contains(CurrentProfile.DEFAULT_ID);
-    assertThat(result.activeProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
+    assertThat(result.profileIds()).contains(AuthContext.DEFAULT_PROFILE_ID);
+    assertThat(result.activeProfileId()).isEqualTo(AuthContext.DEFAULT_PROFILE_ID);
 
     assertThat(sessionRepo.count()).isEqualTo(1);
   }
@@ -174,11 +174,11 @@ class AuthServiceTest {
   void selectProfile_success_updates_session() {
     AuthService.LoginResult login = authService.login(Role.PARENT, "1234");
     var sessionBefore = sessionRepo.findAll().get(0);
-    assertThat(sessionBefore.getProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
+    assertThat(sessionBefore.getProfileId()).isEqualTo(AuthContext.DEFAULT_PROFILE_ID);
 
-    authService.selectProfile(login.token(), CurrentProfile.DEFAULT_ID);
+    authService.selectProfile(login.token(), AuthContext.DEFAULT_PROFILE_ID);
     var sessionAfter = sessionRepo.findAll().get(0);
-    assertThat(sessionAfter.getProfileId()).isEqualTo(CurrentProfile.DEFAULT_ID);
+    assertThat(sessionAfter.getProfileId()).isEqualTo(AuthContext.DEFAULT_PROFILE_ID);
   }
 
   @Test
@@ -224,7 +224,7 @@ class AuthServiceTest {
 
     UserAccountProfileEntity link = new UserAccountProfileEntity();
     link.setUserId(u.getId());
-    link.setProfileId(CurrentProfile.DEFAULT_ID);
+    link.setProfileId(AuthContext.DEFAULT_PROFILE_ID);
     userAccountProfileRepo.save(link);
   }
 
@@ -260,7 +260,7 @@ class AuthServiceTest {
 
     assertThat(result.role()).isEqualTo(Role.PARENT);
     assertThat(result.token()).isNotBlank();
-    assertThat(result.profileIds()).contains(CurrentProfile.DEFAULT_ID);
+    assertThat(result.profileIds()).contains(AuthContext.DEFAULT_PROFILE_ID);
     assertThat(sessionRepo.count()).isEqualTo(1);
   }
 
@@ -284,18 +284,18 @@ class AuthServiceTest {
 
   @Test
   void loginWithPin_success_returns_token() {
-    seedDelegatedPin("5678", CurrentProfile.DEFAULT_ID);
+    seedDelegatedPin("5678", AuthContext.DEFAULT_PROFILE_ID);
 
     AuthService.LoginResult result = authService.loginWithPin("5678");
 
     assertThat(result.role()).isEqualTo(Role.CARER);
-    assertThat(result.profileIds()).containsExactly(CurrentProfile.DEFAULT_ID);
+    assertThat(result.profileIds()).containsExactly(AuthContext.DEFAULT_PROFILE_ID);
     assertThat(sessionRepo.count()).isEqualTo(1);
   }
 
   @Test
   void loginWithPin_invalid_pin_throws() {
-    seedDelegatedPin("5678", CurrentProfile.DEFAULT_ID);
+    seedDelegatedPin("5678", AuthContext.DEFAULT_PROFILE_ID);
 
     assertThatThrownBy(() -> authService.loginWithPin("9999"))
         .isInstanceOf(IllegalArgumentException.class)
@@ -320,7 +320,7 @@ class AuthServiceTest {
     assertThat(userAccountProfileRepo.findByUserId(
         userAccountRepo.findByEmailIgnoreCase("new@test.com").orElseThrow().getId()))
         .hasSize(1)
-        .element(0).matches(up -> up.getProfileId().equals(CurrentProfile.DEFAULT_ID));
+        .element(0).matches(up -> up.getProfileId().equals(AuthContext.DEFAULT_PROFILE_ID));
   }
 
   @Test
@@ -357,6 +357,23 @@ class AuthServiceTest {
     AuthService.LoginResult login = authService.loginWithPassword("user@test.com", "Password1!");
 
     var ids = authService.getProfileIdsForSession(login.token());
-    assertThat(ids).containsExactly(CurrentProfile.DEFAULT_ID);
+    assertThat(ids).containsExactly(AuthContext.DEFAULT_PROFILE_ID);
+  }
+
+  @Test
+  void getProfileIdsForSession_with_delegated_pin_returns_single_profile() {
+    seedDelegatedPin("5678", AuthContext.DEFAULT_PROFILE_ID);
+    AuthService.LoginResult login = authService.loginWithPin("5678");
+
+    var ids = authService.getProfileIdsForSession(login.token());
+    assertThat(ids).containsExactly(AuthContext.DEFAULT_PROFILE_ID);
+  }
+
+  @Test
+  void getProfileIdsForSession_with_role_login_returns_linked_profiles() {
+    AuthService.LoginResult login = authService.login(Role.PARENT, "1234");
+
+    var ids = authService.getProfileIdsForSession(login.token());
+    assertThat(ids).containsExactly(AuthContext.DEFAULT_PROFILE_ID);
   }
 }
