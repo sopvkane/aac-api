@@ -1,16 +1,16 @@
 package com.sophie.aac.preferences.controller;
 
 import com.sophie.aac.auth.domain.Role;
-import com.sophie.aac.auth.util.CurrentRole;
+import com.sophie.aac.auth.util.AuthContext;
+import com.sophie.aac.common.web.ForbiddenException;
 import com.sophie.aac.preferences.domain.PreferenceItemEntity;
+import com.sophie.aac.preferences.domain.PreferenceItemKind;
 import com.sophie.aac.preferences.service.PreferenceItemService;
 import com.sophie.aac.preferences.web.PreferenceItemRequest;
 import com.sophie.aac.preferences.web.PreferenceItemResponse;
 import jakarta.validation.Valid;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
 import java.util.Set;
@@ -20,28 +20,36 @@ import java.util.UUID;
 @RequestMapping("/api/carer/preferences")
 public class PreferenceItemController {
 
-    private static final Set<String> CARER_KINDS = Set.of("FOOD", "DRINK", "ACTIVITY");
-    private static final Set<String> SCHOOL_KINDS = Set.of("TEACHER", "BUS_STAFF", "SCHOOL_PEER", "SUBJECT", "SCHOOL_ACTIVITY");
+    private static final Set<PreferenceItemKind> CARER_KINDS = Set.of(
+        PreferenceItemKind.FOOD, PreferenceItemKind.DRINK, PreferenceItemKind.ACTIVITY
+    );
+    private static final Set<PreferenceItemKind> SCHOOL_KINDS = Set.of(
+        PreferenceItemKind.TEACHER, PreferenceItemKind.BUS_STAFF, PreferenceItemKind.SCHOOL_PEER,
+        PreferenceItemKind.SUBJECT, PreferenceItemKind.SCHOOL_ACTIVITY
+    );
 
     private final PreferenceItemService service;
+    private final AuthContext authContext;
 
-    public PreferenceItemController(PreferenceItemService service) {
+    public PreferenceItemController(PreferenceItemService service, AuthContext authContext) {
         this.service = service;
+        this.authContext = authContext;
     }
 
     private static boolean canAccessKind(Role role, String kind) {
         if (role == null) return false;
-        String k = kind == null ? "" : kind.toUpperCase();
         if (role == Role.PARENT || role == Role.CLINICIAN) return true;
-        if (role == Role.CARER && CARER_KINDS.contains(k)) return true;
-        if ((role == Role.SCHOOL_ADMIN || role == Role.SCHOOL_TEACHER) && SCHOOL_KINDS.contains(k)) return true;
+        var parsedKind = PreferenceItemKind.from(kind);
+        if (parsedKind.isEmpty()) return false;
+        if (role == Role.CARER && CARER_KINDS.contains(parsedKind.get())) return true;
+        if ((role == Role.SCHOOL_ADMIN || role == Role.SCHOOL_TEACHER) && SCHOOL_KINDS.contains(parsedKind.get())) return true;
         return false;
     }
 
     @GetMapping
     public List<PreferenceItemResponse> list(@RequestParam String kind) {
-        if (!canAccessKind(CurrentRole.get(), kind)) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for this preference type");
+        if (!canAccessKind(authContext.currentRole(), kind)) {
+            throw new ForbiddenException("Access denied for this preference type");
         }
         return service.listByKind(kind).stream().map(PreferenceItemController::toResponse).toList();
     }
@@ -61,18 +69,21 @@ public class PreferenceItemController {
 
     @PostMapping
     public PreferenceItemResponse create(@RequestBody @Valid PreferenceItemRequest req) {
-        Role role = CurrentRole.get();
-        if (!canAccessKind(role, req.kind())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for this preference type");
+        Role role = authContext.currentRole();
+        if (role == null) {
+            throw new ForbiddenException("Access denied for this preference type");
         }
-        PreferenceItemEntity e = service.create(req, role != null ? role.name() : "PARENT");
+        if (!canAccessKind(role, req.kind())) {
+            throw new ForbiddenException("Access denied for this preference type");
+        }
+        PreferenceItemEntity e = service.create(req, role.name());
         return toResponse(e);
     }
 
     @PutMapping("/{id}")
     public PreferenceItemResponse update(@PathVariable UUID id, @RequestBody @Valid PreferenceItemRequest req) {
-        if (!canAccessKind(CurrentRole.get(), req.kind())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for this preference type");
+        if (!canAccessKind(authContext.currentRole(), req.kind())) {
+            throw new ForbiddenException("Access denied for this preference type");
         }
         PreferenceItemEntity e = service.update(id, req);
         return toResponse(e);
@@ -81,8 +92,8 @@ public class PreferenceItemController {
     @DeleteMapping("/{id}")
     public void delete(@PathVariable UUID id) {
         PreferenceItemEntity existing = service.findById(id);
-        if (existing != null && !canAccessKind(CurrentRole.get(), existing.getKind())) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Access denied for this preference type");
+        if (existing != null && !canAccessKind(authContext.currentRole(), existing.getKind())) {
+            throw new ForbiddenException("Access denied for this preference type");
         }
         service.delete(id);
     }
@@ -100,4 +111,3 @@ public class PreferenceItemController {
         );
     }
 }
-

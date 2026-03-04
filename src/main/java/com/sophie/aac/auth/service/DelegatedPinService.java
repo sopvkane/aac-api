@@ -3,7 +3,11 @@ package com.sophie.aac.auth.service;
 import com.sophie.aac.auth.domain.DelegatedPinEntity;
 import com.sophie.aac.auth.repository.DelegatedPinRepository;
 import com.sophie.aac.auth.repository.UserAccountProfileRepository;
-import com.sophie.aac.auth.util.CurrentUser;
+import com.sophie.aac.auth.util.AuthContext;
+import com.sophie.aac.common.web.BadRequestException;
+import com.sophie.aac.common.web.ForbiddenException;
+import com.sophie.aac.common.web.NotFoundException;
+import com.sophie.aac.common.web.UnauthorizedException;
 import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
@@ -17,31 +21,32 @@ public class DelegatedPinService {
   private final DelegatedPinRepository delegatedPinRepo;
   private final UserAccountProfileRepository userAccountProfileRepo;
   private final PasswordEncoder encoder;
+  private final AuthContext authContext;
 
   public DelegatedPinService(DelegatedPinRepository delegatedPinRepo,
       UserAccountProfileRepository userAccountProfileRepo,
-      PasswordEncoder encoder) {
+      PasswordEncoder encoder,
+      AuthContext authContext) {
     this.delegatedPinRepo = delegatedPinRepo;
     this.userAccountProfileRepo = userAccountProfileRepo;
     this.encoder = encoder;
+    this.authContext = authContext;
   }
 
   @Transactional
   public DelegatedPinEntity create(String label, String pin, UUID profileId) {
-    UUID userId = CurrentUser.get();
+    UUID userId = authContext.currentUserId();
     if (userId == null) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.UNAUTHORIZED, "Sign in to create a PIN");
+      throw new UnauthorizedException("Sign in to create a PIN");
     }
 
     if (!userAccountProfileRepo.findByUserId(userId).stream()
         .anyMatch(up -> up.getProfileId().equals(profileId))) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.FORBIDDEN, "No access to this profile");
+      throw new ForbiddenException("No access to this profile");
     }
 
     if (pin == null || pin.length() < 4) {
-      throw new IllegalArgumentException("PIN must be at least 4 digits");
+      throw new BadRequestException("PIN must be at least 4 digits");
     }
 
     var entity = new DelegatedPinEntity();
@@ -56,24 +61,20 @@ public class DelegatedPinService {
   }
 
   public List<DelegatedPinEntity> listByCurrentUser() {
-    UUID userId = CurrentUser.get();
+    UUID userId = authContext.currentUserId();
     if (userId == null) return List.of();
     return delegatedPinRepo.findByCreatedByUserId(userId);
   }
 
   @Transactional
   public void revoke(UUID pinId) {
-    UUID userId = CurrentUser.get();
+    UUID userId = authContext.currentUserId();
     if (userId == null) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.UNAUTHORIZED, "Sign in to revoke a PIN");
+      throw new UnauthorizedException("Sign in to revoke a PIN");
     }
-    var pin = delegatedPinRepo.findById(pinId).orElseThrow(() ->
-        new org.springframework.web.server.ResponseStatusException(
-            org.springframework.http.HttpStatus.NOT_FOUND, "PIN not found"));
+    var pin = delegatedPinRepo.findById(pinId).orElseThrow(() -> new NotFoundException("PIN not found"));
     if (!pin.getCreatedByUserId().equals(userId)) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.FORBIDDEN, "Cannot revoke PIN created by another user");
+      throw new ForbiddenException("Cannot revoke PIN created by another user");
     }
     pin.setActive(false);
     delegatedPinRepo.save(pin);

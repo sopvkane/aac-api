@@ -1,14 +1,15 @@
 package com.sophie.aac.preferences.controller;
 
+import com.sophie.aac.auth.domain.Role;
+import com.sophie.aac.auth.util.AuthContext;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.sophie.aac.preferences.domain.PreferenceItemEntity;
 import com.sophie.aac.preferences.service.PreferenceItemService;
 import com.sophie.aac.preferences.web.PreferenceItemRequest;
-import org.junit.jupiter.api.AfterEach;
+import com.sophie.aac.common.web.ApiExceptionHandler;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.MediaType;
-import com.sophie.aac.auth.util.TestSecurityHelper;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
@@ -27,18 +28,17 @@ class PreferenceItemControllerTest {
   private MockMvc mvc;
   private ObjectMapper objectMapper;
   private PreferenceItemService service;
+  private AuthContext authContext;
 
   @BeforeEach
   void setUp() {
     objectMapper = new ObjectMapper();
     service = mock(PreferenceItemService.class);
-    mvc = MockMvcBuilders.standaloneSetup(new PreferenceItemController(service)).build();
-    TestSecurityHelper.setParentWithProfile();
-  }
-
-  @AfterEach
-  void tearDown() {
-    TestSecurityHelper.clear();
+    authContext = mock(AuthContext.class);
+    when(authContext.currentRole()).thenReturn(Role.PARENT);
+    mvc = MockMvcBuilders.standaloneSetup(new PreferenceItemController(service, authContext))
+        .setControllerAdvice(new ApiExceptionHandler())
+        .build();
   }
 
   @Test
@@ -78,6 +78,19 @@ class PreferenceItemControllerTest {
         .andExpect(jsonPath("$.label").value("Sad"));
 
     verify(service).create(any(PreferenceItemRequest.class), eq("PARENT"));
+  }
+
+  @Test
+  void create_returns_403_when_unauthenticated() throws Exception {
+    when(authContext.currentRole()).thenReturn(null);
+    PreferenceItemRequest req = new PreferenceItemRequest("food", "Toast", null, null, null, "home", 5);
+
+    mvc.perform(post("/api/carer/preferences")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(req)))
+        .andExpect(status().isForbidden());
+
+    verify(service, never()).create(any(), any());
   }
 
   @Test
@@ -165,7 +178,7 @@ class PreferenceItemControllerTest {
 
   @Test
   void list_returns_403_for_carer_requesting_school_kind() throws Exception {
-    TestSecurityHelper.setRoleWithProfile("CARER");
+    when(authContext.currentRole()).thenReturn(Role.CARER);
 
     mvc.perform(get("/api/carer/preferences").param("kind", "TEACHER"))
         .andExpect(status().isForbidden());
@@ -175,7 +188,7 @@ class PreferenceItemControllerTest {
 
   @Test
   void list_returns_200_for_carer_requesting_food() throws Exception {
-    TestSecurityHelper.setRoleWithProfile("CARER");
+    when(authContext.currentRole()).thenReturn(Role.CARER);
     when(service.listByKind("FOOD")).thenReturn(List.of());
 
     mvc.perform(get("/api/carer/preferences").param("kind", "FOOD"))
@@ -186,7 +199,7 @@ class PreferenceItemControllerTest {
 
   @Test
   void list_returns_403_when_unauthenticated() throws Exception {
-    TestSecurityHelper.clear();
+    when(authContext.currentRole()).thenReturn(null);
 
     mvc.perform(get("/api/carer/preferences").param("kind", "FOOD"))
         .andExpect(status().isForbidden());

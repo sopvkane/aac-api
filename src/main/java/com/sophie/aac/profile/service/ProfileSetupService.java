@@ -5,8 +5,8 @@ import com.sophie.aac.auth.domain.UserAccountProfileEntity;
 import com.sophie.aac.auth.repository.CaregiverAccountProfileRepository;
 import com.sophie.aac.auth.repository.CaregiverAccountRepository;
 import com.sophie.aac.auth.repository.UserAccountProfileRepository;
-import com.sophie.aac.auth.util.CurrentRole;
-import com.sophie.aac.auth.util.CurrentUser;
+import com.sophie.aac.auth.util.AuthContext;
+import com.sophie.aac.common.web.UnauthorizedException;
 import com.sophie.aac.profile.domain.UserProfileEntity;
 import com.sophie.aac.profile.repository.UserProfileRepository;
 import com.sophie.aac.suggestions.domain.LocationCategory;
@@ -26,27 +26,29 @@ public class ProfileSetupService {
   private final CaregiverAccountRepository accountRepo;
   private final CaregiverAccountProfileRepository accountProfileRepo;
   private final UserAccountProfileRepository userAccountProfileRepo;
+  private final AuthContext authContext;
 
   public ProfileSetupService(
       UserProfileRepository profileRepo,
       CaregiverAccountRepository accountRepo,
       CaregiverAccountProfileRepository accountProfileRepo,
-      UserAccountProfileRepository userAccountProfileRepo) {
+      UserAccountProfileRepository userAccountProfileRepo,
+      AuthContext authContext) {
     this.profileRepo = profileRepo;
     this.accountRepo = accountRepo;
     this.accountProfileRepo = accountProfileRepo;
     this.userAccountProfileRepo = userAccountProfileRepo;
+    this.authContext = authContext;
   }
 
   @Transactional
   public UserProfileEntity createProfile(String displayName, String wakeName) {
-    var role = CurrentRole.get();
+    var role = authContext.currentRole();
     if (role == null) {
-      throw new org.springframework.web.server.ResponseStatusException(
-          org.springframework.http.HttpStatus.UNAUTHORIZED, "Sign in to create a profile");
+      throw new UnauthorizedException("Sign in to create a profile");
     }
 
-    UUID userId = CurrentUser.get();
+    UUID userId = authContext.currentUserId();
     if (userId != null) {
       return createProfileForUser(userId, displayName, wakeName);
     }
