@@ -47,22 +47,23 @@ class AuthControllerTest {
   }
 
   @Test
-  void login_sets_httpOnly_cookie_and_returns_role() throws Exception {
-    when(authService.login(Role.PARENT, "1234"))
+  void login_with_pin_sets_httpOnly_cookie_and_returns_role() throws Exception {
+    var profileId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+    when(authService.loginWithPin("1234"))
         .thenReturn(new AuthService.LoginResult(Role.PARENT, "token123", 240,
-            java.util.List.of(java.util.UUID.fromString("00000000-0000-0000-0000-000000000001")),
-            java.util.UUID.fromString("00000000-0000-0000-0000-000000000001")));
+            java.util.List.of(profileId),
+            profileId));
 
     mvc.perform(post("/api/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest(Role.PARENT, "1234"))))
+            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest(null, null, "1234"))))
         .andExpect(status().isOk())
         .andExpect(header().string("Set-Cookie", containsString("AAC_SESSION=token123")))
         .andExpect(header().string("Set-Cookie", containsString("HttpOnly")))
         .andExpect(header().string("Set-Cookie", containsString("SameSite=Lax")))
         .andExpect(jsonPath("$.role").value("PARENT"));
 
-    verify(authService).login(Role.PARENT, "1234");
+    verify(authService).loginWithPin("1234");
   }
 
   @Test
@@ -73,13 +74,13 @@ class AuthControllerTest {
         .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")));
 
     // no cookie -> authService.logout not called
-    verify(authService).logout(null);
+    verify(authService).logout(org.mockito.ArgumentMatchers.isNull());
   }
 
   @Test
   void selectProfile_success_returns_me_response() throws Exception {
     var profileId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
-    when(authService.getProfileIdsForRole(Role.PARENT)).thenReturn(java.util.List.of(profileId));
+    when(authService.getProfileIdsForSession("token")).thenReturn(java.util.List.of(profileId));
     var auth = new UsernamePasswordAuthenticationToken("parent", null,
         java.util.List.of(new org.springframework.security.core.authority.SimpleGrantedAuthority("ROLE_PARENT")));
     SecurityContextHolder.getContext().setAuthentication(auth);
