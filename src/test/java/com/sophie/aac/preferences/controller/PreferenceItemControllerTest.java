@@ -81,6 +81,19 @@ class PreferenceItemControllerTest {
   }
 
   @Test
+  void create_returns_403_when_unauthenticated() throws Exception {
+    when(authContext.currentRole()).thenReturn(null);
+    PreferenceItemRequest req = new PreferenceItemRequest("food", "Toast", null, null, null, "home", 5);
+
+    mvc.perform(post("/api/carer/preferences")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(req)))
+        .andExpect(status().isForbidden());
+
+    verify(service, never()).create(any(), any());
+  }
+
+  @Test
   void update_calls_service() throws Exception {
     UUID id = UUID.randomUUID();
     PreferenceItemRequest req = new PreferenceItemRequest("emotion", "Joy", null, null, null, "user", 10);

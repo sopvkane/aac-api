@@ -70,10 +70,13 @@ public class PreferenceItemController {
     @PostMapping
     public PreferenceItemResponse create(@RequestBody @Valid PreferenceItemRequest req) {
         Role role = authContext.currentRole();
+        if (role == null) {
+            throw new ForbiddenException("Access denied for this preference type");
+        }
         if (!canAccessKind(role, req.kind())) {
             throw new ForbiddenException("Access denied for this preference type");
         }
-        PreferenceItemEntity e = service.create(req, role != null ? role.name() : "PARENT");
+        PreferenceItemEntity e = service.create(req, role.name());
         return toResponse(e);
     }
 

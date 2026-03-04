@@ -135,22 +135,25 @@ final class DialogueReplySelection {
     if (!qLower.contains(" or ")) return null;
 
     Set<String> fillerWords = Set.of("instead", "else", "please", "thanks", "then", "too");
-    String[] parts = qLower.split("\\s+or\\s+");
-    if (parts.length < 2) return null;
+    List<String> parts = splitOnOr(qLower);
+    if (parts.size() < 2) return null;
 
     List<String> options = new ArrayList<>();
     for (String part : parts) {
-      String p = part.replaceAll("[?.,!]", "").trim();
+      String p = removePunctuation(part).trim();
       if (p.isBlank()) continue;
 
-      p = p.replaceFirst("^(would you like|do you want|can i get you)\\s+", "");
-      p = p.replaceFirst("^(a|some)\\s+", "");
+      p = stripPrefixPhrase(p, "would you like");
+      p = stripPrefixPhrase(p, "do you want");
+      p = stripPrefixPhrase(p, "can i get you");
+      p = stripPrefixPhrase(p, "a");
+      p = stripPrefixPhrase(p, "some");
       if (p.contains(" of ")) {
-        p = p.replaceFirst("\\s+of\\s+\\w+$", "");
+        p = stripTrailingOfWord(p);
       }
-      p = p.trim();
+      p = normalizeSpaces(p).trim();
 
-      String[] words = p.split("\\s+");
+      String[] words = p.split(" ");
       String candidate;
       if (words.length >= 2) {
         String lastWord = words[words.length - 1].toLowerCase(Locale.ROOT);
@@ -162,7 +165,8 @@ final class DialogueReplySelection {
       } else {
         candidate = words.length > 0 ? words[words.length - 1] : "";
       }
-      if (candidate.length() >= 2 && !fillerWords.contains(candidate.toLowerCase(Locale.ROOT).split("\\s+")[0])) {
+      String firstWord = firstToken(candidate);
+      if (candidate.length() >= 2 && !fillerWords.contains(firstWord)) {
         options.add(candidate);
       }
     }
@@ -191,6 +195,74 @@ final class DialogueReplySelection {
     List<String> displayLabels = rawOpts.stream().map(DialogueReplyCommon::displayLabelFor).toList();
     groups.add(new DialogueResponse.OptionGroup("choices", "Your choices", displayLabels));
     return new DialogueReplyEngine.Result(replies, groups);
+  }
+
+  private static List<String> splitOnOr(String input) {
+    String normalized = normalizeSpaces(input);
+    List<String> out = new ArrayList<>();
+    int start = 0;
+    int idx;
+    while ((idx = normalized.indexOf(" or ", start)) >= 0) {
+      out.add(normalized.substring(start, idx));
+      start = idx + 4;
+    }
+    out.add(normalized.substring(start));
+    return out;
+  }
+
+  private static String removePunctuation(String s) {
+    StringBuilder sb = new StringBuilder(s.length());
+    for (int i = 0; i < s.length(); i++) {
+      char ch = s.charAt(i);
+      if (ch == '?' || ch == '.' || ch == ',' || ch == '!') {
+        continue;
+      }
+      sb.append(ch);
+    }
+    return sb.toString();
+  }
+
+  private static String normalizeSpaces(String s) {
+    String out = s.replace('\t', ' ').replace('\n', ' ').replace('\r', ' ');
+    while (out.contains("  ")) {
+      out = out.replace("  ", " ");
+    }
+    return out;
+  }
+
+  private static String stripPrefixPhrase(String input, String phrase) {
+    String lower = input.toLowerCase(Locale.ROOT);
+    if (!lower.startsWith(phrase)) {
+      return input;
+    }
+    int len = phrase.length();
+    if (lower.length() == len) {
+      return "";
+    }
+    char next = lower.charAt(len);
+    if (!Character.isWhitespace(next)) {
+      return input;
+    }
+    return input.substring(len).trim();
+  }
+
+  private static String stripTrailingOfWord(String input) {
+    int ofIdx = input.lastIndexOf(" of ");
+    if (ofIdx <= 0) {
+      return input;
+    }
+    String tail = input.substring(ofIdx + 4).trim();
+    if (tail.isEmpty() || tail.contains(" ")) {
+      return input;
+    }
+    return input.substring(0, ofIdx).trim();
+  }
+
+  private static String firstToken(String text) {
+    if (text == null || text.isBlank()) return "";
+    int space = text.indexOf(' ');
+    String token = space >= 0 ? text.substring(0, space) : text;
+    return token.toLowerCase(Locale.ROOT);
   }
 
   static List<DialogueResponse.Reply> ensureRepliesFromOptionsIfNeeded(

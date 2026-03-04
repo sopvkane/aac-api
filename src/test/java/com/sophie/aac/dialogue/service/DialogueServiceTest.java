@@ -144,6 +144,18 @@ class DialogueServiceTest {
         .containsExactly("Juice", "Water", "Help");
   }
 
+  @Test
+  void detects_name_intro_for_im_without_apostrophe() {
+    DialogueService service = new DialogueService(
+        ai, userProfileService, new ObjectMapper(), preferenceItemService, replyEngine, semanticEngine, "SEMANTIC"
+    );
+
+    DialogueRequest req = new DialogueRequest("Sophie", "im alex", Map.of("location", "HOME"), null);
+    DialogueResponse response = service.generateReplies(req);
+
+    assertThat(response.intent()).isEqualTo("NAME_INTRO");
+  }
+
   private static UserProfileService.UserProfile defaultProfile() {
     return new UserProfileService.UserProfile(
         "Yes, please. I would like ",

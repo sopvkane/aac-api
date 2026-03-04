@@ -123,8 +123,7 @@ final class DialogueReplyCommon {
     if (label == null || label.isBlank()) return label;
     String trimmed = label.trim();
     String lower = trimmed.toLowerCase(Locale.ROOT);
-    if (lower.matches("^(one|two|three|four|five|six|seven|eight|nine|ten)\\s+.+")
-        || lower.matches("^\\d+\\s+.+")) {
+    if (startsWithCountWord(lower) || startsWithNumber(lower)) {
       return trimmed;
     }
     if (lower.contains("juice") || lower.contains("milk") || lower.contains("water") || lower.contains("tea")
@@ -147,6 +146,30 @@ final class DialogueReplyCommon {
       return "an " + trimmed;
     }
     return "a " + trimmed;
+  }
+
+  private static boolean startsWithCountWord(String lower) {
+    int firstSpace = lower.indexOf(' ');
+    if (firstSpace <= 0 || firstSpace >= lower.length() - 1) return false;
+    String firstWord = lower.substring(0, firstSpace);
+    return firstWord.equals("one")
+        || firstWord.equals("two")
+        || firstWord.equals("three")
+        || firstWord.equals("four")
+        || firstWord.equals("five")
+        || firstWord.equals("six")
+        || firstWord.equals("seven")
+        || firstWord.equals("eight")
+        || firstWord.equals("nine")
+        || firstWord.equals("ten");
+  }
+
+  private static boolean startsWithNumber(String lower) {
+    int i = 0;
+    while (i < lower.length() && Character.isDigit(lower.charAt(i))) {
+      i++;
+    }
+    return i > 0 && i < lower.length() && Character.isWhitespace(lower.charAt(i));
   }
 
   static String phraseWouldLike(String label) {

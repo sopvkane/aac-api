@@ -184,8 +184,26 @@ public class DialogueService {
     if (containsAny(q, "how are you feeling", "how do you feel", "how are you", "how do you feel today")) return Intent.FEELING;
     if (q.contains("feeling") || q.contains("feel")) return Intent.FEELING;
     if (containsAny(q, "what is your name", "what's your name", "whats your name", "what are you called", "tell me your name", "who are you", "your name")) return Intent.INTRO_REQUEST;
-    if (containsAny(q, "my name is", "i'm ", "i am ", "call me ") || q.matches(".*\\bi'?m\\s+[a-z]+.*")) return Intent.NAME_INTRO;
+    if (containsAny(q, "my name is", "i'm ", "i am ", "call me ") || looksLikeImNameIntro(q)) return Intent.NAME_INTRO;
     return Intent.OTHER;
+  }
+
+  private static boolean looksLikeImNameIntro(String qLower) {
+    if (qLower == null || qLower.isBlank()) return false;
+    int idx = qLower.indexOf("i'm ");
+    int markerLength = 4;
+    if (idx < 0) {
+      idx = qLower.indexOf("im ");
+      markerLength = 3;
+    }
+    if (idx < 0) return false;
+    int start = idx + markerLength;
+    if (start >= qLower.length()) return false;
+    int end = start;
+    while (end < qLower.length() && Character.isLetter(qLower.charAt(end))) {
+      end++;
+    }
+    return end > start;
   }
 
   private static boolean shouldUseLlm(Intent intent, List<DialogueResponse.Reply> replies) {
