@@ -100,14 +100,34 @@ public class AuthService {
   public LoginResult loginWithPin(String pin) {
     if (pin == null || pin.isBlank()) throw new AuthValidationException("Invalid PIN");
 
-    DelegatedPinEntity matched = delegatedPins.findAll().stream()
+    DelegatedPinEntity matchedDelegatedPin = delegatedPins.findAll().stream()
         .filter(DelegatedPinEntity::isActive)
         .filter(dp -> encoder.matches(pin, dp.getPinHash()))
         .findFirst()
-        .orElseThrow(() -> new AuthValidationException("Invalid PIN"));
+        .orElse(null);
 
-    List<UUID> profileIds = List.of(matched.getProfileId());
-    return sessionService.createSession(Role.CARER, matched.getProfileId(), profileIds, null, matched.getId());
+    if (matchedDelegatedPin != null) {
+      List<UUID> profileIds = List.of(matchedDelegatedPin.getProfileId());
+      return sessionService.createSession(Role.CARER, matchedDelegatedPin.getProfileId(), profileIds, null, matchedDelegatedPin.getId());
+    }
+
+    for (Role role : Role.values()) {
+      CaregiverAccountEntity accountForRole;
+      try {
+        accountForRole = accessService.requireActiveCaregiverAccount(role);
+      } catch (IllegalArgumentException ex) {
+        continue;
+      }
+      if (!encoder.matches(pin, accountForRole.getPinHash())) continue;
+
+      List<UUID> profileIds = accessService.getProfileIdsForRole(role);
+      if (profileIds.isEmpty()) {
+        throw new AuthValidationException("No profiles linked to this account");
+      }
+      return sessionService.createSession(role, profileIds.get(0), profileIds, null, null);
+    }
+
+    throw new AuthValidationException("Invalid PIN");
   }
 
   @Transactional

@@ -35,7 +35,7 @@ public class AuthController {
   }
 
   public record ProfileSummary(java.util.UUID id, String displayName) {}
-  public record LoginRequest(String email, String password, String pin) {}
+  public record LoginRequest(String email, String password, String pin, String role) {}
   public record RegisterRequest(@NotBlank String displayName, @NotBlank String email, @NotBlank String password,
       @NotBlank String role, @NotBlank String joiningCode) {}
   public record MeResponse(Role role, java.util.UUID activeProfileId, java.util.List<java.util.UUID> profileIds, java.util.List<ProfileSummary> profiles) {}
@@ -52,10 +52,12 @@ public class AuthController {
     AuthService.LoginResult result;
     if (req.email() != null && !req.email().isBlank() && req.password() != null) {
       result = auth.loginWithPassword(req.email().trim(), req.password());
+    } else if (req.role() != null && !req.role().isBlank() && req.pin() != null && !req.pin().isBlank()) {
+      result = auth.login(parseRole(req.role()), req.pin());
     } else if (req.pin() != null && !req.pin().isBlank()) {
       result = auth.loginWithPin(req.pin());
     } else {
-      throw new BadRequestException("Provide email+password or pin");
+      throw new BadRequestException("Provide email+password, role+pin, or delegated pin");
     }
 
     ResponseCookie cookie = ResponseCookie.from(AuthService.COOKIE_NAME, result.token())
@@ -175,5 +177,15 @@ public class AuthController {
       if (name.equals(c.getName())) return c.getValue();
     }
     return null;
+  }
+
+  private static Role parseRole(String roleRaw) {
+    String normalized = roleRaw.trim().replace('-', '_').replace(' ', '_').toUpperCase();
+    if ("TEACHER".equals(normalized)) normalized = "SCHOOL_TEACHER";
+    try {
+      return Role.valueOf(normalized);
+    } catch (IllegalArgumentException ex) {
+      throw new BadRequestException("Invalid role");
+    }
   }
 }
