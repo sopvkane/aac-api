@@ -1,0 +1,365 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< com.sophie:aac-api >-------------------------
+[INFO] Building aac-api 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ aac-api ---
+[INFO] Deleting /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (prepare-agent) @ aac-api ---
+[INFO] argLine set to "-javaagent:/Users/svkane/.m2/repository/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar=destfile=/Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/jacoco.exec"
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aac-api ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 22 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ aac-api ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 109 source files with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aac-api ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ aac-api ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 33 source files with javac [debug parameters release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ aac-api ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.sophie.aac.preferences.controller.PreferenceItemControllerTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.92 s -- in com.sophie.aac.preferences.controller.PreferenceItemControllerTest
+[INFO] Running com.sophie.aac.preferences.service.PreferenceItemServiceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.728 s -- in com.sophie.aac.preferences.service.PreferenceItemServiceTest
+[INFO] Running com.sophie.aac.auth.security.SecurityIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.694 s -- in com.sophie.aac.auth.security.SecurityIntegrationTest
+[INFO] Running com.sophie.aac.auth.controller.DelegatedPinControllerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.050 s -- in com.sophie.aac.auth.controller.DelegatedPinControllerTest
+[INFO] Running com.sophie.aac.auth.controller.AuthControllerTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.185 s -- in com.sophie.aac.auth.controller.AuthControllerTest
+[INFO] Running com.sophie.aac.auth.service.AuthServiceTest
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.213 s -- in com.sophie.aac.auth.service.AuthServiceTest
+[INFO] Running com.sophie.aac.auth.service.DelegatedPinServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.745 s -- in com.sophie.aac.auth.service.DelegatedPinServiceTest
+[INFO] Running com.sophie.aac.AacApiSmokeTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.017 s -- in com.sophie.aac.AacApiSmokeTest
+[INFO] Running com.sophie.aac.phrases.PhraseControllerTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.117 s -- in com.sophie.aac.phrases.PhraseControllerTest
+[INFO] Running com.sophie.aac.phrases.service.PhraseServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.430 s -- in com.sophie.aac.phrases.service.PhraseServiceTest
+[INFO] Running com.sophie.aac.speech.controller.SpeechTokenControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.sophie.aac.speech.controller.SpeechTokenControllerTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.111 s -- in com.sophie.aac.dialogue.service.DialogueServiceTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueReplyEngineTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.008 s -- in com.sophie.aac.dialogue.service.DialogueReplyEngineTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueReplySelectionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.dialogue.service.DialogueReplySelectionTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueSocialReplyBuilderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.sophie.aac.dialogue.service.DialogueSocialReplyBuilderTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueReplyCommonTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.dialogue.service.DialogueReplyCommonTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueModeTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.dialogue.service.DialogueModeTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueSemanticEngineTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.sophie.aac.dialogue.service.DialogueSemanticEngineTest
+[INFO] Running com.sophie.aac.dialogue.service.FoundryAiReplyClientTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.137 s -- in com.sophie.aac.dialogue.service.FoundryAiReplyClientTest
+[INFO] Running com.sophie.aac.dialogue.service.DialoguePreferenceReplyBuilderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.sophie.aac.dialogue.service.DialoguePreferenceReplyBuilderTest
+[INFO] Running com.sophie.aac.dialogue.DialogueControllerContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.sophie.aac.dialogue.DialogueControllerContractTest
+[INFO] Running com.sophie.aac.common.web.ApiExceptionsTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.common.web.ApiExceptionsTest
+[INFO] Running com.sophie.aac.common.web.ApiExceptionHandlerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.common.web.ApiExceptionHandlerTest
+[INFO] Running com.sophie.aac.profile.controller.CarerProfileControllerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.100 s -- in com.sophie.aac.profile.controller.CarerProfileControllerTest
+[INFO] Running com.sophie.aac.profile.service.CaregiverProfileServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.570 s -- in com.sophie.aac.profile.service.CaregiverProfileServiceTest
+[INFO] Running com.sophie.aac.tts.controller.TtsControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.015 s -- in com.sophie.aac.tts.controller.TtsControllerTest
+[INFO] Running com.sophie.aac.suggestions.controller.SuggestionsControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.034 s -- in com.sophie.aac.suggestions.controller.SuggestionsControllerTest
+[INFO] Running com.sophie.aac.suggestions.service.SuggestionsServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.033 s -- in com.sophie.aac.suggestions.service.SuggestionsServiceTest
+[INFO] Running com.sophie.aac.wellbeing.controller.WellbeingControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.021 s -- in com.sophie.aac.wellbeing.controller.WellbeingControllerTest
+[INFO] Running com.sophie.aac.wellbeing.service.WellbeingServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.403 s -- in com.sophie.aac.wellbeing.service.WellbeingServiceTest
+[INFO] Running com.sophie.aac.analytics.controller.CaregiverDashboardControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.038 s -- in com.sophie.aac.analytics.controller.CaregiverDashboardControllerTest
+[INFO] Running com.sophie.aac.analytics.service.CaregiverDashboardServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.343 s -- in com.sophie.aac.analytics.service.CaregiverDashboardServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 143, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jacoco:0.8.12:report (report) @ aac-api ---
+[INFO] Loading execution data file /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/jacoco.exec
+[INFO] Analyzed bundle 'aac-api' with 130 classes
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  50.131 s
+[INFO] Finished at: 2026-04-20T19:18:57+01:00
+[INFO] ------------------------------------------------------------------------
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] -------------------------< com.sophie:aac-api >-------------------------
+[INFO] Building aac-api 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- clean:3.5.0:clean (default-clean) @ aac-api ---
+[INFO] Deleting /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target
+[INFO] 
+[INFO] --- jacoco:0.8.12:prepare-agent (prepare-agent) @ aac-api ---
+[INFO] argLine set to "-javaagent:/Users/svkane/.m2/repository/org/jacoco/org.jacoco.agent/0.8.12/org.jacoco.agent-0.8.12-runtime.jar=destfile=/Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/jacoco.exec"
+[INFO] 
+[INFO] --- resources:3.3.1:resources (default-resources) @ aac-api ---
+[INFO] Copying 2 resources from src/main/resources to target/classes
+[INFO] Copying 22 resources from src/main/resources to target/classes
+[INFO] 
+[INFO] --- compiler:3.14.1:compile (default-compile) @ aac-api ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 109 source files with javac [debug parameters release 17] to target/classes
+[INFO] 
+[INFO] --- resources:3.3.1:testResources (default-testResources) @ aac-api ---
+[INFO] Copying 2 resources from src/test/resources to target/test-classes
+[INFO] 
+[INFO] --- compiler:3.14.1:testCompile (default-testCompile) @ aac-api ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 33 source files with javac [debug parameters release 17] to target/test-classes
+[INFO] 
+[INFO] --- surefire:3.5.4:test (default-test) @ aac-api ---
+[INFO] Using auto detected provider org.apache.maven.surefire.junitplatform.JUnitPlatformProvider
+[INFO] 
+[INFO] -------------------------------------------------------
+[INFO]  T E S T S
+[INFO] -------------------------------------------------------
+[INFO] Running com.sophie.aac.preferences.controller.PreferenceItemControllerTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 12.59 s -- in com.sophie.aac.preferences.controller.PreferenceItemControllerTest
+[INFO] Running com.sophie.aac.preferences.service.PreferenceItemServiceTest
+[INFO] Tests run: 10, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.141 s -- in com.sophie.aac.preferences.service.PreferenceItemServiceTest
+[INFO] Running com.sophie.aac.auth.security.SecurityIntegrationTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.559 s -- in com.sophie.aac.auth.security.SecurityIntegrationTest
+[INFO] Running com.sophie.aac.auth.controller.DelegatedPinControllerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.041 s -- in com.sophie.aac.auth.controller.DelegatedPinControllerTest
+[INFO] Running com.sophie.aac.auth.controller.AuthControllerTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.184 s -- in com.sophie.aac.auth.controller.AuthControllerTest
+[INFO] Running com.sophie.aac.auth.service.AuthServiceTest
+[INFO] Tests run: 22, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 6.231 s -- in com.sophie.aac.auth.service.AuthServiceTest
+[INFO] Running com.sophie.aac.auth.service.DelegatedPinServiceTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.658 s -- in com.sophie.aac.auth.service.DelegatedPinServiceTest
+[INFO] Running com.sophie.aac.AacApiSmokeTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.014 s -- in com.sophie.aac.AacApiSmokeTest
+[INFO] Running com.sophie.aac.phrases.PhraseControllerTest
+[INFO] Tests run: 7, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.115 s -- in com.sophie.aac.phrases.PhraseControllerTest
+[INFO] Running com.sophie.aac.phrases.service.PhraseServiceTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.349 s -- in com.sophie.aac.phrases.service.PhraseServiceTest
+[INFO] Running com.sophie.aac.speech.controller.SpeechTokenControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.011 s -- in com.sophie.aac.speech.controller.SpeechTokenControllerTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueServiceTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.071 s -- in com.sophie.aac.dialogue.service.DialogueServiceTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueReplyEngineTest
+[INFO] Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.006 s -- in com.sophie.aac.dialogue.service.DialogueReplyEngineTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueReplySelectionTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.002 s -- in com.sophie.aac.dialogue.service.DialogueReplySelectionTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueSocialReplyBuilderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.sophie.aac.dialogue.service.DialogueSocialReplyBuilderTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueReplyCommonTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.dialogue.service.DialogueReplyCommonTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueModeTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0 s -- in com.sophie.aac.dialogue.service.DialogueModeTest
+[INFO] Running com.sophie.aac.dialogue.service.DialogueSemanticEngineTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.003 s -- in com.sophie.aac.dialogue.service.DialogueSemanticEngineTest
+[INFO] Running com.sophie.aac.dialogue.service.FoundryAiReplyClientTest
+[INFO] Tests run: 6, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.100 s -- in com.sophie.aac.dialogue.service.FoundryAiReplyClientTest
+[INFO] Running com.sophie.aac.dialogue.service.DialoguePreferenceReplyBuilderTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.004 s -- in com.sophie.aac.dialogue.service.DialoguePreferenceReplyBuilderTest
+[INFO] Running com.sophie.aac.dialogue.DialogueControllerContractTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.029 s -- in com.sophie.aac.dialogue.DialogueControllerContractTest
+[INFO] Running com.sophie.aac.common.web.ApiExceptionsTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.common.web.ApiExceptionsTest
+[INFO] Running com.sophie.aac.common.web.ApiExceptionHandlerTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.001 s -- in com.sophie.aac.common.web.ApiExceptionHandlerTest
+[INFO] Running com.sophie.aac.profile.controller.CarerProfileControllerTest
+[INFO] Tests run: 4, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.086 s -- in com.sophie.aac.profile.controller.CarerProfileControllerTest
+[INFO] Running com.sophie.aac.profile.service.CaregiverProfileServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.304 s -- in com.sophie.aac.profile.service.CaregiverProfileServiceTest
+[INFO] Running com.sophie.aac.tts.controller.TtsControllerTest
+[INFO] Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.012 s -- in com.sophie.aac.tts.controller.TtsControllerTest
+[INFO] Running com.sophie.aac.suggestions.controller.SuggestionsControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.030 s -- in com.sophie.aac.suggestions.controller.SuggestionsControllerTest
+[INFO] Running com.sophie.aac.suggestions.service.SuggestionsServiceTest
+[INFO] Tests run: 3, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.031 s -- in com.sophie.aac.suggestions.service.SuggestionsServiceTest
+[INFO] Running com.sophie.aac.wellbeing.controller.WellbeingControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.018 s -- in com.sophie.aac.wellbeing.controller.WellbeingControllerTest
+[INFO] Running com.sophie.aac.wellbeing.service.WellbeingServiceTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.372 s -- in com.sophie.aac.wellbeing.service.WellbeingServiceTest
+[INFO] Running com.sophie.aac.analytics.controller.CaregiverDashboardControllerTest
+[INFO] Tests run: 2, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.032 s -- in com.sophie.aac.analytics.controller.CaregiverDashboardControllerTest
+[INFO] Running com.sophie.aac.analytics.service.CaregiverDashboardServiceTest
+[INFO] Tests run: 5, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.283 s -- in com.sophie.aac.analytics.service.CaregiverDashboardServiceTest
+[INFO] 
+[INFO] Results:
+[INFO] 
+[INFO] Tests run: 143, Failures: 0, Errors: 0, Skipped: 0
+[INFO] 
+[INFO] 
+[INFO] --- jacoco:0.8.12:report (report) @ aac-api ---
+[INFO] Loading execution data file /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/jacoco.exec
+[INFO] Analyzed bundle 'aac-api' with 130 classes
+[INFO] 
+[INFO] --- jar:3.4.2:jar (default-jar) @ aac-api ---
+[INFO] Building jar: /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/aac-api-0.0.1-SNAPSHOT.jar
+[INFO] 
+[INFO] --- spring-boot:4.0.2:repackage (repackage) @ aac-api ---
+[INFO] Replacing main artifact /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/aac-api-0.0.1-SNAPSHOT.jar with repackaged archive, adding nested dependencies in BOOT-INF/.
+[INFO] The original artifact has been renamed to /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/aac-api-0.0.1-SNAPSHOT.jar.original
+[INFO] 
+[INFO] --- jacoco:0.8.12:check (check) @ aac-api ---
+[INFO] Loading execution data file /Users/svkane/Downloads/B00909265 AAC Code/aac-api/target/jacoco.exec
+[INFO] Analyzed bundle 'aac-api' with 130 classes
+[INFO] All coverage checks have been met.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  44.903 s
+[INFO] Finished at: 2026-04-20T19:19:52+01:00
+[INFO] ------------------------------------------------------------------------
+
+=== POST-RUN METRICS (from generated reports) ===
+tests=143 failures=0 errors=0 skipped=0
+line_covered=2261 line_missed=556 line_coverage=80.26%
+branch_covered=884 branch_missed=818 branch_coverage=51.94%
+
+=== KEY CONFIG EXCERPTS ===
+182:        <artifactId>jacoco-maven-plugin</artifactId>
+200:            <phase>verify</phase>
+212:                      <minimum>0.80</minimum>
+3:sonar.sources=src/main/java
+4:sonar.tests=src/test/java
+6:sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+8:sonar.coverage.exclusions=**/dialogue/**,**/speech/**,**/tts/**
+4:  pull_request:
+5:  push:
+50:        run: ./mvnw -B test
+4:  push:
+6:  pull_request:
+25:        run: ./mvnw -B clean verify
+
+=== ARTIFACT LOCATIONS ===
+TEST-com.sophie.aac.AacApiSmokeTest.xml
+TEST-com.sophie.aac.analytics.controller.CaregiverDashboardControllerTest.xml
+TEST-com.sophie.aac.analytics.service.CaregiverDashboardServiceTest.xml
+TEST-com.sophie.aac.auth.controller.AuthControllerTest.xml
+TEST-com.sophie.aac.auth.controller.DelegatedPinControllerTest.xml
+TEST-com.sophie.aac.auth.security.SecurityIntegrationTest.xml
+TEST-com.sophie.aac.auth.service.AuthServiceTest.xml
+TEST-com.sophie.aac.auth.service.DelegatedPinServiceTest.xml
+TEST-com.sophie.aac.common.web.ApiExceptionHandlerTest.xml
+TEST-com.sophie.aac.common.web.ApiExceptionsTest.xml
+TEST-com.sophie.aac.dialogue.DialogueControllerContractTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueModeTest.xml
+TEST-com.sophie.aac.dialogue.service.DialoguePreferenceReplyBuilderTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueReplyCommonTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueReplyEngineTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueReplySelectionTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueSemanticEngineTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueServiceTest.xml
+TEST-com.sophie.aac.dialogue.service.DialogueSocialReplyBuilderTest.xml
+TEST-com.sophie.aac.dialogue.service.FoundryAiReplyClientTest.xml
+TEST-com.sophie.aac.phrases.PhraseControllerTest.xml
+TEST-com.sophie.aac.phrases.service.PhraseServiceTest.xml
+TEST-com.sophie.aac.preferences.controller.PreferenceItemControllerTest.xml
+TEST-com.sophie.aac.preferences.service.PreferenceItemServiceTest.xml
+TEST-com.sophie.aac.profile.controller.CarerProfileControllerTest.xml
+com.sophie.aac
+com.sophie.aac.analytics.controller
+com.sophie.aac.analytics.domain
+com.sophie.aac.analytics.service
+com.sophie.aac.analytics.web
+com.sophie.aac.auth.bootstrap
+com.sophie.aac.auth.config
+com.sophie.aac.auth.controller
+com.sophie.aac.auth.domain
+com.sophie.aac.auth.security
+com.sophie.aac.auth.service
+com.sophie.aac.auth.util
+com.sophie.aac.common
+com.sophie.aac.common.web
+com.sophie.aac.config
+com.sophie.aac.dialogue.controller
+com.sophie.aac.dialogue.service
+com.sophie.aac.dialogue.web
+com.sophie.aac.health
+com.sophie.aac.icons.controller
+com.sophie.aac.phrases.controller
+com.sophie.aac.phrases.domain
+com.sophie.aac.phrases.repository
+com.sophie.aac.phrases.service
+com.sophie.aac.phrases.web
+
+=== FRAMEWORK/TOOLING EVIDENCE EXCERPTS ===
+23:    <testcontainers.version>1.20.4</testcontainers.version>
+42:      <artifactId>spring-security-test</artifactId>
+107:      <artifactId>spring-boot-starter-test</artifactId>
+113:      <artifactId>mockito-subclass</artifactId>
+117:      <groupId>com.h2database</groupId>
+118:      <artifactId>h2</artifactId>
+124:      <groupId>org.testcontainers</groupId>
+130:      <groupId>org.testcontainers</groupId>
+182:        <artifactId>jacoco-maven-plugin</artifactId>
+
+=== CI/WORKFLOW EVIDENCE EXCERPTS ===
+.github/workflows/ci.yml:1:name: api-ci
+.github/workflows/ci.yml:4:  pull_request:
+.github/workflows/ci.yml:5:  push:
+.github/workflows/ci.yml:42:      - name: Set up Java 17
+.github/workflows/ci.yml:49:      - name: Run tests
+.github/workflows/ci.yml:50:        run: ./mvnw -B test
+.github/workflows/ci.yml:52:      - name: Upload test reports
+.github/workflows/ci.yml:56:          name: api-test-reports
+.github/workflows/sonar.yml:1:name: SonarCloud
+.github/workflows/sonar.yml:4:  push:
+.github/workflows/sonar.yml:6:  pull_request:
+.github/workflows/sonar.yml:12:      - name: Checkout
+.github/workflows/sonar.yml:17:      - name: Set up JDK 17
+.github/workflows/sonar.yml:24:      - name: Build & test (with coverage)
+.github/workflows/sonar.yml:25:        run: ./mvnw -B clean verify
+.github/workflows/sonar.yml:27:      - name: SonarCloud Scan
+.github/workflows/dependency-review.yml:1:name: api-dependency-review
+.github/workflows/dependency-review.yml:4:  pull_request:
+.github/workflows/dependency-review.yml:11:      - uses: actions/dependency-review-action@v4
+
+=== SONAR COVERAGE EXCLUSION EVIDENCE ===
+sonar.projectKey=sopvkane_aac-api
+sonar.organization=sopvkane
+sonar.sources=src/main/java
+sonar.tests=src/test/java
+sonar.java.binaries=target/classes
+sonar.coverage.jacoco.xmlReportPaths=target/site/jacoco/jacoco.xml
+# Exclude from coverage: AI/LLM layer, Azure SDK integrations (external deps)
+sonar.coverage.exclusions=**/dialogue/**,**/speech/**,**/tts/**
+=== Improvement cycle results (2026-04-20) ===
+Command: ./mvnw -B clean verify
+Result: BUILD SUCCESS
+tests=155 failures=0 errors=0 skipped=0
+line_covered=2333 line_missed=484 line_coverage=82.82%
+branch_covered=903 branch_missed=799 branch_coverage=53.06%
+
+=== Improvement cycle results (security hardening + targeted coverage) ===
+Command: ./mvnw -B clean verify
+Result: BUILD SUCCESS
+tests=165 failures=0 errors=0 skipped=0
+line_covered=2377 line_missed=442 line_coverage=84.32%
+branch_covered=926 branch_missed=776 branch_coverage=54.41%

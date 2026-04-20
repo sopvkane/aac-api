@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.MediaType;
 import org.springframework.web.context.WebApplicationContext;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -23,6 +24,7 @@ import java.util.UUID;
 
 import static org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers.springSecurity;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(
@@ -118,6 +120,65 @@ class SecurityIntegrationTest {
 
     mvc.perform(get("/api/carer/profile")
             .cookie(new Cookie(AuthService.COOKIE_NAME, rawToken)))
+        .andExpect(status().isOk());
+  }
+
+  @Test
+  void carer_profile_rejects_invalid_cookie_token() throws Exception {
+    mvc.perform(get("/api/carer/profile")
+            .cookie(new Cookie(AuthService.COOKIE_NAME, "not-a-real-session-token")))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void carer_profile_rejects_expired_cookie_session() throws Exception {
+    String rawToken = "expired.token.value";
+
+    AuthSessionEntity s = new AuthSessionEntity();
+    s.setId(UUID.randomUUID());
+    s.setRole(Role.PARENT);
+    s.setTokenHash(TokenHash.sha256Hex(rawToken));
+    s.setProfileId(CaregiverProfileService.DEFAULT_ID);
+    s.setCreatedAt(Instant.now().minusSeconds(7200));
+    s.setExpiresAt(Instant.now().minusSeconds(60));
+    sessions.save(s);
+
+    mvc.perform(get("/api/carer/profile")
+            .cookie(new Cookie(AuthService.COOKIE_NAME, rawToken)))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void auth_me_requires_authentication() throws Exception {
+    mvc.perform(get("/api/auth/me"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void interactions_endpoint_requires_authentication() throws Exception {
+    mvc.perform(post("/api/interactions")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"eventType\":\"OPTION_SELECTED\",\"location\":\"HOME\"}"))
+        .andExpect(status().isForbidden());
+  }
+
+  @Test
+  void interactions_endpoint_allows_authenticated_parent_session() throws Exception {
+    String rawToken = "interactions.token.value";
+
+    AuthSessionEntity s = new AuthSessionEntity();
+    s.setId(UUID.randomUUID());
+    s.setRole(Role.PARENT);
+    s.setTokenHash(TokenHash.sha256Hex(rawToken));
+    s.setProfileId(CaregiverProfileService.DEFAULT_ID);
+    s.setCreatedAt(Instant.now());
+    s.setExpiresAt(Instant.now().plusSeconds(3600));
+    sessions.save(s);
+
+    mvc.perform(post("/api/interactions")
+            .cookie(new Cookie(AuthService.COOKIE_NAME, rawToken))
+            .contentType(MediaType.APPLICATION_JSON)
+            .content("{\"eventType\":\"OPTION_SELECTED\",\"location\":\"HOME\",\"selectedText\":\"Water\"}"))
         .andExpect(status().isOk());
   }
 }
