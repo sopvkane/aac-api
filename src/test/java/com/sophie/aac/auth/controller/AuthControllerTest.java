@@ -62,7 +62,7 @@ class AuthControllerTest {
 
     mvc.perform(post("/api/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest(null, null, "1234"))))
+            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest(null, null, "1234", null))))
         .andExpect(status().isOk())
         .andExpect(header().string("Set-Cookie", containsString("AAC_SESSION=token123")))
         .andExpect(header().string("Set-Cookie", containsString("HttpOnly")))
@@ -70,6 +70,25 @@ class AuthControllerTest {
         .andExpect(jsonPath("$.role").value("PARENT"));
 
     verify(authService).loginWithPin("1234");
+  }
+
+  @Test
+  void login_with_role_pin_uses_role_login() throws Exception {
+    var profileId = java.util.UUID.fromString("00000000-0000-0000-0000-000000000001");
+    when(authService.login(Role.SCHOOL_TEACHER, "5678"))
+        .thenReturn(new AuthService.LoginResult(Role.SCHOOL_TEACHER, "token456", 240,
+            java.util.List.of(profileId),
+            profileId));
+
+    mvc.perform(post("/api/auth/login")
+            .contentType(MediaType.APPLICATION_JSON)
+            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest(null, null, "5678", "teacher"))))
+        .andExpect(status().isOk())
+        .andExpect(header().string("Set-Cookie", containsString("AAC_SESSION=token456")))
+        .andExpect(jsonPath("$.role").value("SCHOOL_TEACHER"));
+
+    verify(authService).login(Role.SCHOOL_TEACHER, "5678");
+    verify(authService, never()).loginWithPin("5678");
   }
 
   @Test
@@ -82,7 +101,7 @@ class AuthControllerTest {
 
     mvc.perform(post("/api/auth/login")
             .contentType(MediaType.APPLICATION_JSON)
-            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest("user@test.com", "Password1!", null))))
+            .content(objectMapper.writeValueAsString(new AuthController.LoginRequest("user@test.com", "Password1!", null, null))))
         .andExpect(status().isOk())
         .andExpect(header().string("Set-Cookie", containsString("AAC_SESSION=token789")))
         .andExpect(jsonPath("$.role").value("PARENT"));

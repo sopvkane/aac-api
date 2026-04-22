@@ -26,6 +26,7 @@ public class SecurityConfig {
             .requestMatchers(HttpMethod.POST, "/api/auth/login").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/register").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/logout").permitAll()
+            .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
             .requestMatchers(HttpMethod.POST, "/api/auth/select-profile")
             .hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
             .requestMatchers("/actuator/health", "/actuator/info").permitAll()
@@ -34,7 +35,9 @@ public class SecurityConfig {
             .requestMatchers("/api/auth/me").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
             .requestMatchers("/api/carer/**").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
             .requestMatchers("/api/phrases/**").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
-            // everything else can stay open for now
+            // secure-by-default for API surface
+            .requestMatchers("/api/**").hasAnyRole("PARENT", "CARER", "CLINICIAN", "SCHOOL_ADMIN", "SCHOOL_TEACHER")
+            // non-API endpoints can stay open (e.g. health probes/docs assets)
             .anyRequest().permitAll()
         )
         .exceptionHandling(ex -> ex

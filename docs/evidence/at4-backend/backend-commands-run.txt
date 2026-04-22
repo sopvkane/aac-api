@@ -1,0 +1,56 @@
+[START] 2026-04-20T18:12:02Z
+pwd: /Users/svkane/Downloads/B00909265 AAC Code/aac-api
+git HEAD: 47a049a
+
+# Repository/config inspection
+rg --files .github src/test sonar-project.properties pom.xml
+sed -n '1,260p' pom.xml
+sed -n '1,220p' sonar-project.properties
+sed -n '1,260p' .github/workflows/ci.yml
+sed -n '1,260p' .github/workflows/sonar.yml
+sed -n '1,260p' .github/workflows/dependency-review.yml
+
+# Check execution (initial full-capture run)
+./mvnw -B clean test
+./mvnw -B clean verify
+
+# Note
+A generated evidence log file was accidentally oversized due recursive append during capture. It was deleted and checks were re-run with filtered logging capture.
+
+# Check execution (final evidence run)
+./mvnw -B clean test 2>&1 | grep -E '(^\[|BUILD SUCCESS|BUILD FAILURE|Tests run:|There are test failures|ERROR)'
+./mvnw -B clean verify 2>&1 | grep -E '(^\[|BUILD SUCCESS|BUILD FAILURE|Tests run:|There are test failures|ERROR|Skipping JaCoCo execution|Rule violated|All coverage checks have been met)'
+
+# Metrics extraction from generated reports
+awk (surefire totals) target/surefire-reports/TEST-*.xml
+awk (jacoco aggregate) target/site/jacoco/jacoco.csv
+rg -n "jacoco-maven-plugin|<phase>verify|<minimum>" pom.xml
+rg -n "sonar.coverage.exclusions|sonar.coverage.jacoco.xmlReportPaths|sonar.sources|sonar.tests" sonar-project.properties
+rg -n "./mvnw -B test|pull_request|push:" .github/workflows/ci.yml
+rg -n "./mvnw -B clean verify|pull_request|push:" .github/workflows/sonar.yml
+ls -1 target/surefire-reports
+ls -1 target/site/jacoco
+df -h .
+
+[END] 2026-04-20T18:20:30Z
+
+# Improvement cycle (security+coverage tests)
+Added tests:
+- src/test/java/com/sophie/aac/auth/security/SecurityIntegrationTest.java (extra denial-path tests)
+- src/test/java/com/sophie/aac/icons/controller/IconSuggestionsControllerTest.java
+- src/test/java/com/sophie/aac/profile/service/ProfileSetupServiceTest.java
+./mvnw -B clean verify
+awk surefire totals target/surefire-reports/TEST-*.xml
+awk jacoco aggregate target/site/jacoco/jacoco.csv
+
+# Improvement cycle (security hardening + targeted coverage)
+Updated:
+- src/main/java/com/sophie/aac/auth/security/SecurityConfig.java
+- src/test/java/com/sophie/aac/auth/security/SecurityIntegrationTest.java
+- src/test/java/com/sophie/aac/analytics/service/InteractionEventServiceTest.java
+- src/test/java/com/sophie/aac/analytics/controller/InteractionEventControllerTest.java
+- src/test/java/com/sophie/aac/auth/util/SecurityAuthContextTest.java
+
+./mvnw -B clean verify
+awk surefire totals target/surefire-reports/TEST-*.xml
+awk jacoco aggregate target/site/jacoco/jacoco.csv

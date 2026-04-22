@@ -294,6 +294,15 @@ class AuthServiceTest {
   }
 
   @Test
+  void loginWithPin_falls_back_to_role_pin_when_no_delegated_pin_matches() {
+    AuthService.LoginResult result = authService.loginWithPin("1234");
+
+    assertThat(result.role()).isEqualTo(Role.PARENT);
+    assertThat(result.profileIds()).containsExactly(AuthContext.DEFAULT_PROFILE_ID);
+    assertThat(sessionRepo.count()).isEqualTo(1);
+  }
+
+  @Test
   void loginWithPin_invalid_pin_throws() {
     seedDelegatedPin("5678", AuthContext.DEFAULT_PROFILE_ID);
 
